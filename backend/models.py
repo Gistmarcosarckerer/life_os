@@ -87,6 +87,24 @@ class TaskEntry(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class RawEntry(Base):
+    __tablename__ = "raw_entries"
+
+    id = Column(Integer, primary_key=True)
+    source = Column(String, nullable=False, default="telegram")
+    raw_text = Column(Text, nullable=False)
+    normalized_text = Column(Text, nullable=False, default="")
+    classification = Column(String, nullable=False, default="nota_geral")
+    confidence = Column(Float, nullable=False, default=0)
+    status = Column(String, nullable=False, default="raw_input")
+    extracted_data = Column(Text, nullable=False, default="{}")
+    interpreted_text = Column(Text, nullable=False, default="")
+    suggestion = Column(Text, nullable=False, default="")
+    chat_id = Column(String, nullable=False, default="")
+    username = Column(String, nullable=False, default="")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class FinancialProfile(Base):
     __tablename__ = "financial_profile"
 

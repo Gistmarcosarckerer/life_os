@@ -13,6 +13,7 @@ O Codex cria snapshots em `versions/` a cada atualizacao relevante.
 - `versions/v0.4.0`: integracao com Telegram para entradas moveis.
 - `versions/v0.5.0`: preparacao para deploy em Render/Railway com Gunicorn.
 - `versions/v0.6.0`: modulo financeiro profissional e dashboard premium.
+- `versions/v0.7.0`: parser NLP livre para Telegram/Siri e entradas brutas.
 
 Para voltar manualmente, copie os arquivos da versao desejada de volta para a raiz do projeto.
 
@@ -74,9 +75,12 @@ renda extra 300 freela
 humor 7 energia 6 ansiedade 3
 tarefa revisar PCP impacto 8 urgencia 7 energia 5
 treino peito concluido
+to cansado hoje
+amanha consulta 14h
+dormi mal
 ```
 
-O bot salva os dados no SQLite/PostgreSQL, responde com a interpretacao e sugere uma proxima recomendacao quando possivel.
+O bot analisa toda mensagem automaticamente com heuristicas de NLP simples, classifica em financeiro, saude, humor, produtividade, agenda, treino ou nota geral, salva a entrada bruta em `raw_entries` e responde com a interpretacao. Se o LIFE OS nao entender totalmente, a mensagem nao e perdida: ela fica como `raw_input` para revisao.
 
 ## Financeiro
 
@@ -177,6 +181,7 @@ GET /life-status
 GET /tracker-status
 GET /telegram/status
 GET /telegram/entries
+GET /telegram/raw-entries
 GET /finance
 GET /finance/settings
 POST /finance/settings

@@ -21,6 +21,12 @@ from backend.services.mobile_entry_service import (
     save_mood_log,
     save_task_entry,
 )
+from backend.services.nlp_service import (
+    analyze_message,
+    apply_analysis,
+    build_telegram_response,
+    save_raw_entry,
+)
 from backend.services.productivity_engine import (
     build_focus_recommendation,
     get_focus_snapshot,
@@ -84,9 +90,8 @@ class TelegramBotService:
 
         async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
-                "LIFE OS ativo. Envie: peso 88.1, sono 6h, gastei 45 almoco, "
-                "recebi 4300 salario, renda extra 300 freela, humor 7 energia 6 ansiedade 3, "
-                "tarefa revisar PCP impacto 8 urgencia 7 energia 5."
+                "LIFE OS ativo. Pode falar natural: gastei 80 mercado, to cansado hoje, "
+                "peso 88, amanha consulta 14h, dormi mal, treino peito concluido."
             )
 
         async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -118,10 +123,12 @@ telegram_bot_service = TelegramBotService()
 
 
 def process_telegram_message(text: str, chat_id: str = "", username: str = "") -> str:
-    normalized = normalize_text(text)
     try:
         with session_scope() as session:
-            interpretation = interpret_and_save(session, normalized, text)
+            analysis = analyze_message(text)
+            save_raw_entry(session, analysis, chat_id=chat_id, username=username)
+            apply_analysis(session, analysis)
+
             snapshot = get_focus_snapshot(session)
             mission = choose_current_mission(
                 session,
@@ -129,30 +136,21 @@ def process_telegram_message(text: str, chat_id: str = "", username: str = "") -
                 state=snapshot["state"],
             )
             recommendation = (
-                interpretation.recommendation
+                analysis.suggestion
                 or build_focus_recommendation(snapshot, mission)
             )
             create_mobile_entry(
                 session,
-                entry_type=interpretation.entry_type,
+                entry_type=analysis.entry_type,
                 raw_text=text,
-                interpreted_text=interpretation.interpreted_text,
+                interpreted_text=analysis.interpreted_text,
                 recommendation=recommendation,
                 chat_id=chat_id,
                 username=username,
             )
+            response = build_telegram_response(session, analysis)
 
-        if interpretation.direct_response:
-            return (
-                f"{interpretation.interpreted_text}\n"
-                f"{recommendation}"
-            )
-
-        return (
-            "Salvo no LIFE OS.\n"
-            f"Interpretacao: {interpretation.interpreted_text}\n"
-            f"Proxima recomendacao: {recommendation}"
-        )
+        return response
     except ValueError as exc:
         return f"Nao consegui interpretar: {exc}"
 

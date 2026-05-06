@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 
 from backend.database import session_scope
 from backend.services.mobile_entry_service import get_telegram_debug, list_recent_mobile_entries
+from backend.services.nlp_service import list_raw_entries
 from backend.services.telegram_bot import telegram_bot_service
 
 telegram_bp = Blueprint("telegram", __name__)
@@ -28,3 +29,12 @@ def telegram_debug():
     with session_scope() as session:
         debug = get_telegram_debug(session, limit=limit)
     return jsonify(debug)
+
+
+@telegram_bp.route("/telegram/raw-entries")
+def telegram_raw_entries():
+    limit = request.args.get("limit", 20, type=int)
+    limit = max(1, min(limit, 80))
+    with session_scope() as session:
+        entries = list_raw_entries(session, limit=limit)
+    return jsonify(entries)

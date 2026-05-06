@@ -94,19 +94,42 @@
     </div>
     <div id="telegram-debug-messages" class="space-y-2 mt-4"></div>
   </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="panel p-5 xl:col-span-2">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="muted text-sm">NLP Telegram/Siri</p>
+          <h3 class="text-xl font-bold mt-1">Entradas interpretadas</h3>
+        </div>
+        <span class="badge bg-green-400 text-gray-950">automatico</span>
+      </div>
+      <div id="nlp-interpreted" class="space-y-2 mt-4"></div>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Nao classificadas</p>
+      <div id="nlp-unclassified" class="space-y-2 mt-4"></div>
+    </div>
+  </section>
+
+  <section class="panel p-5">
+    <p class="muted text-sm">Sugestoes automaticas</p>
+    <div id="nlp-suggestions" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4"></div>
+  </section>
 </div>
 
 <script>
 const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
 
 async function refreshDashboard() {
-  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes, debugRes] = await Promise.all([
+  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes, debugRes, rawEntriesRes] = await Promise.all([
     fetch('/life-status'),
     fetch('/api/finance/summary'),
     fetch('/tracker-status'),
     fetch('/telegram/status'),
     fetch('/telegram/entries?limit=4'),
-    fetch('/telegram/debug?limit=6')
+    fetch('/telegram/debug?limit=6'),
+    fetch('/telegram/raw-entries?limit=10')
   ]);
   const life = await lifeRes.json();
   const financePayload = await financeRes.json();
@@ -114,6 +137,7 @@ async function refreshDashboard() {
   const telegram = await telegramRes.json();
   const entries = await entriesRes.json();
   const debug = await debugRes.json();
+  const rawEntries = await rawEntriesRes.json();
   const finance = financePayload.summary;
 
   document.getElementById('finance-health').innerText = finance.health_score;
@@ -138,6 +162,7 @@ async function refreshDashboard() {
   renderTransactions(financePayload.transactions || []);
   renderTelegram(entries.entries || []);
   renderTelegramDebug(debug);
+  renderNlpEntries(rawEntries);
 }
 
 function renderAlerts(alerts) {
@@ -181,6 +206,33 @@ function renderTelegramDebug(debug) {
       <p class="muted text-xs mt-1">${escapeHtml(item.interpreted_text)}</p>
     </div>
   `).join('') : '<p class="muted text-sm">Nenhuma mensagem recebida pelo Telegram ainda.</p>';
+}
+
+function renderNlpEntries(payload) {
+  const interpreted = payload.interpreted || [];
+  const unclassified = payload.unclassified || [];
+  const suggestions = payload.suggestions || [];
+
+  document.getElementById('nlp-interpreted').innerHTML = interpreted.length ? interpreted.map(item => `
+    <div class="panel-soft p-3">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <p class="text-sm font-semibold">${escapeHtml(item.interpreted_text)}</p>
+        <span class="badge bg-gray-800 text-gray-300">${escapeHtml(item.classification)} ${Math.round(Number(item.confidence || 0) * 100)}%</span>
+      </div>
+      <p class="muted text-xs mt-1">${escapeHtml(item.raw_text)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Nenhuma entrada interpretada ainda.</p>';
+
+  document.getElementById('nlp-unclassified').innerHTML = unclassified.length ? unclassified.map(item => `
+    <div class="panel-soft p-3">
+      <p class="text-sm font-semibold">${escapeHtml(item.raw_text)}</p>
+      <p class="muted text-xs mt-1">${escapeHtml(item.suggestion || 'aguardando revisao')}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Sem entradas pendentes.</p>';
+
+  document.getElementById('nlp-suggestions').innerHTML = suggestions.length ? suggestions.map(item => `
+    <div class="panel-soft p-3 text-sm">${escapeHtml(item)}</div>
+  `).join('') : '<p class="muted text-sm">As sugestoes aparecem conforme novas mensagens chegam.</p>';
 }
 
 function escapeHtml(value) {

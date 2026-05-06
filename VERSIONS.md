@@ -77,3 +77,13 @@ Este arquivo registra as versoes criadas pelo Codex para facilitar retorno manua
 - Telegram entende `gasto`, `gastei`, `paguei`, `recebi` e `renda extra`.
 - Dashboard principal mostra saude financeira, risco, gasto do mes, saldo previsto e recomendacao.
 - UI reformulada com sidebar, header, cards premium e paginas para Dashboard, Financeiro, Produtividade, Telegram e Configuracoes.
+
+## v0.7.0 - Parser NLP livre Telegram/Siri
+
+- Adicionado modelo `raw_entries` para guardar toda mensagem recebida, mesmo quando a interpretacao for parcial.
+- Adicionado `backend/services/nlp_service.py` com regex, palavras-chave e heuristicas modulares para futura IA.
+- Telegram passa a classificar mensagens em financeiro, saude, humor, produtividade, agenda, treino e nota geral.
+- Extracao automatica de numeros, datas, horarios, valores monetarios, categorias e sentimento simples.
+- Mensagens financeiras continuam atualizando `transactions` e o dashboard financeiro automaticamente.
+- Novo endpoint `/telegram/raw-entries`.
+- Dashboard principal mostra entradas interpretadas, entradas nao classificadas e sugestoes automaticas.
