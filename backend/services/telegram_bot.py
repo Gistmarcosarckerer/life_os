@@ -11,6 +11,7 @@ from backend.services.decision_engine import choose_current_mission
 from backend.services.finance_service import (
     categorize_transaction,
     create_transaction,
+    display_category,
     get_financial_summary,
 )
 from backend.services.mobile_entry_service import (
@@ -31,6 +32,7 @@ class TelegramInterpretation:
     entry_type: str
     interpreted_text: str
     recommendation: str
+    direct_response: bool = False
 
 
 class TelegramBotService:
@@ -140,6 +142,12 @@ def process_telegram_message(text: str, chat_id: str = "", username: str = "") -
                 username=username,
             )
 
+        if interpretation.direct_response:
+            return (
+                f"{interpretation.interpreted_text}\n"
+                f"{recommendation}"
+            )
+
         return (
             "Salvo no LIFE OS.\n"
             f"Interpretacao: {interpretation.interpreted_text}\n"
@@ -174,6 +182,7 @@ def interpret_and_save(session, normalized: str, raw_text: str) -> TelegramInter
     if starts_with_any(normalized, ["gastei ", "gasto ", "paguei "]):
         amount, description = parse_money_message(normalized, ["gastei", "gasto", "paguei"])
         category = categorize_transaction(description, "expense")
+        category_label = display_category(category)
         create_transaction(
             session,
             amount=amount,
@@ -186,8 +195,9 @@ def interpret_and_save(session, normalized: str, raw_text: str) -> TelegramInter
         summary = get_financial_summary(session)
         return TelegramInterpretation(
             "expense",
-            f"gasto registrado: R$ {amount:g} em {description or 'sem descricao'} | categoria {category}",
+            f"Gasto registrado: R${amount:g} - {category_label}",
             summary["recommendation"],
+            direct_response=True,
         )
 
     if starts_with_any(normalized, ["recebi ", "renda extra "]):
@@ -203,8 +213,9 @@ def interpret_and_save(session, normalized: str, raw_text: str) -> TelegramInter
         summary = get_financial_summary(session)
         return TelegramInterpretation(
             "income",
-            f"renda registrada: R$ {amount:g} | {description or 'renda'}",
+            f"Renda registrada: R${amount:g} - {description or 'renda'}",
             f"Saldo previsto atualizado: R$ {summary['projected_balance']:.2f}.",
+            direct_response=True,
         )
 
     if normalized.startswith("humor "):
@@ -275,10 +286,23 @@ def parse_sleep_hours(text: str) -> float:
 
 def parse_money_message(text: str, keywords: list[str]) -> tuple[float, str]:
     for keyword in keywords:
-        match = re.search(rf"\b{re.escape(keyword)}\s+(\d+(?:[\.,]\d+)?)(?:\s+(.+))?", text)
+        match = re.search(
+            rf"\b{re.escape(keyword)}\s+(?:r\$?\s*)?(\d+(?:[\.,]\d+)?)(?:\s*(?:reais|real|rs))?(?:\s+(.+))?",
+            text,
+        )
         if match:
-            return float(match.group(1).replace(",", ".")), (match.group(2) or "").strip()
+            return (
+                float(match.group(1).replace(",", ".")),
+                clean_financial_description(match.group(2) or ""),
+            )
     raise ValueError("valor financeiro ausente")
+
+
+def clean_financial_description(description: str) -> str:
+    description = " ".join((description or "").strip().split())
+    noise_words = {"reais", "real", "rs"}
+    words = [word for word in description.split() if word not in noise_words]
+    return " ".join(words)
 
 
 def starts_with_any(text: str, prefixes: list[str]) -> bool:

@@ -24,8 +24,22 @@ DEFAULT_CATEGORIES = [
     ("outros", 0, 10),
 ]
 
+CATEGORY_LABELS = {
+    "alimentacao": "alimenta\u00e7\u00e3o",
+    "transporte": "transporte",
+    "carro": "carro",
+    "lazer": "lazer",
+    "saude": "sa\u00fade",
+    "mercado": "mercado",
+    "assinatura": "assinatura",
+    "divida/parcela": "d\u00edvida/parcela",
+    "investimento": "investimento",
+    "outros": "outros",
+    "renda": "renda",
+}
+
 CATEGORY_KEYWORDS = {
-    "alimentacao": ["almoco", "jantar", "lanche", "cafe", "ifood", "restaurante", "pizza"],
+    "alimentacao": ["almoco", "jantar", "lanche", "cafe", "ifood", "restaurante", "pizza", "comida"],
     "transporte": ["uber", "99", "onibus", "metro", "taxi", "combustivel", "gasolina"],
     "carro": ["carro", "mecanico", "seguro", "ipva", "pneu", "oficina", "estacionamento"],
     "lazer": ["cinema", "bar", "show", "viagem", "jogo", "lazer", "festa"],
@@ -35,6 +49,10 @@ CATEGORY_KEYWORDS = {
     "divida/parcela": ["parcela", "emprestimo", "financiamento", "cartao", "boleto", "divida"],
     "investimento": ["investimento", "tesouro", "acao", "reserva", "cdb", "cripto"],
 }
+
+
+def display_category(category: str) -> str:
+    return CATEGORY_LABELS.get(category, category or "outros")
 
 
 def seed_financial_defaults(session):
