@@ -1,0 +1,6 @@
+flask
+sqlalchemy
+python-dotenv
+python-telegram-bot
+gunicorn
+psycopg2-binary

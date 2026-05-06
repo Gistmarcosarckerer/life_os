@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block eyebrow %}Foco e execucao{% endblock %}
+{% block title %}Produtividade{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="panel p-5"><p class="muted text-sm">Focus score</p><p id="focus-score" class="text-4xl font-extrabold mt-2">--</p></div>
+    <div class="panel p-5"><p class="muted text-sm">Estado</p><p id="state" class="text-4xl font-extrabold mt-2">--</p></div>
+    <div class="panel p-5"><p class="muted text-sm">Trocas de contexto</p><p id="switches" class="text-4xl font-extrabold mt-2">--</p></div>
+  </section>
+  <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="panel p-5">
+      <p class="muted text-sm">Missao atual</p>
+      <h3 id="mission" class="text-2xl font-bold mt-2">Carregando</h3>
+      <p id="recommendation" class="text-gray-300 mt-4"></p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Apps dominantes</p>
+      <div id="apps" class="space-y-2 mt-4"></div>
+    </div>
+  </section>
+</div>
+<script>
+async function loadProductivity() {
+  const response = await fetch('/life-status');
+  const data = await response.json();
+  document.getElementById('focus-score').innerText = data.focus_score;
+  document.getElementById('state').innerText = data.estado_atual;
+  document.getElementById('switches').innerText = data.metricas.trocas_contexto;
+  document.getElementById('mission').innerText = data.missao_atual ? data.missao_atual.name : 'Nenhuma missao';
+  document.getElementById('recommendation').innerText = data.recomendacao;
+  document.getElementById('apps').innerHTML = (data.top_apps || []).map(app => `<div class="panel-soft p-3 flex justify-between"><span>${app.app_name}</span><span class="muted">${app.minutes}m</span></div>`).join('') || '<p class="muted">Sem dados ainda.</p>';
+}
+loadProductivity();
+setInterval(loadProductivity, 4000);
+</script>
+{% endblock %}

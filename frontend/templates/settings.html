@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block eyebrow %}Sistema{% endblock %}
+{% block title %}Configuracoes{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+  <section class="panel p-5">
+    <h3 class="font-bold text-lg">Ambiente</h3>
+    <div class="space-y-3 mt-4 text-sm">
+      <div class="panel-soft p-3 flex justify-between"><span>Deploy</span><span>Gunicorn via Procfile</span></div>
+      <div class="panel-soft p-3 flex justify-between"><span>Banco</span><span>SQLite local ou DATABASE_URL</span></div>
+      <div class="panel-soft p-3 flex justify-between"><span>Telegram</span><span>TELEGRAM_BOT_TOKEN</span></div>
+    </div>
+  </section>
+  <section class="panel p-5">
+    <h3 class="font-bold text-lg">Comandos aceitos no Telegram</h3>
+    <div class="space-y-2 mt-4 text-sm text-gray-300">
+      <p class="panel-soft p-3">gastei 35 almoco</p>
+      <p class="panel-soft p-3">paguei 950 parcela carro</p>
+      <p class="panel-soft p-3">recebi 4300 salario</p>
+      <p class="panel-soft p-3">renda extra 300 freela</p>
+      <p class="panel-soft p-3">humor 7 energia 6 ansiedade 3</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

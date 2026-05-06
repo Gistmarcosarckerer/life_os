@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block eyebrow %}Controle financeiro{% endblock %}
+{% block title %}Financeiro{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="panel p-5"><p class="muted text-sm">Renda mensal</p><p class="text-3xl font-extrabold mt-2" id="income">R$ 0.00</p></div>
+    <div class="panel p-5"><p class="muted text-sm">Gasto no mes</p><p class="text-3xl font-extrabold mt-2" id="expenses">R$ 0.00</p></div>
+    <div class="panel p-5"><p class="muted text-sm">Saldo previsto</p><p class="text-3xl font-extrabold mt-2" id="balance">R$ 0.00</p></div>
+    <div class="panel p-5"><p class="muted text-sm">Limite diario</p><p class="text-3xl font-extrabold mt-2" id="daily-limit">R$ 0.00</p></div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <form id="profile-form" class="panel p-5 space-y-3">
+      <h3 class="font-bold text-lg">Configuracao de renda</h3>
+      <input class="field" id="monthly-income" type="number" step="0.01" placeholder="Salario mensal liquido">
+      <input class="field" id="extra-income" type="number" step="0.01" placeholder="Renda extra opcional">
+      <input class="field" id="payday" type="number" min="1" max="31" placeholder="Dia de recebimento">
+      <input class="field" id="savings-goal" type="number" step="0.01" placeholder="Meta de economia mensal">
+      <input class="field" id="reserve-goal" type="number" step="0.01" placeholder="Reserva de emergencia desejada">
+      <input class="field" id="current-reserve" type="number" step="0.01" placeholder="Reserva atual">
+      <button class="btn btn-primary w-full" type="submit">Salvar configuracao</button>
+    </form>
+
+    <form id="transaction-form" class="panel p-5 space-y-3">
+      <h3 class="font-bold text-lg">Registrar transacao</h3>
+      <select class="field" id="transaction-type"><option value="expense">Gasto</option><option value="income">Renda</option></select>
+      <input class="field" id="transaction-amount" type="number" step="0.01" placeholder="Valor">
+      <input class="field" id="transaction-description" placeholder="Descricao">
+      <select class="field" id="transaction-category">
+        <option value="">Categoria automatica</option>
+        <option>alimentacao</option><option>transporte</option><option>carro</option><option>lazer</option><option>saude</option><option>mercado</option><option>assinatura</option><option>divida/parcela</option><option>investimento</option><option>outros</option>
+      </select>
+      <button class="btn btn-primary w-full" type="submit">Registrar</button>
+    </form>
+
+    <form id="purchase-form" class="panel p-5 space-y-3">
+      <h3 class="font-bold text-lg">Analise de compra</h3>
+      <input class="field" id="purchase-name" placeholder="Nome da compra">
+      <input class="field" id="purchase-amount" type="number" step="0.01" placeholder="Valor">
+      <input class="field" id="purchase-priority" type="number" min="1" max="10" placeholder="Prioridade 1-10">
+      <select class="field" id="payment-type"><option value="cash">A vista</option><option value="installments">Parcelado</option></select>
+      <input class="field" id="installments" type="number" min="1" max="60" value="1" placeholder="Parcelas">
+      <button class="btn btn-primary w-full" type="submit">Avaliar compra</button>
+      <div id="purchase-result" class="panel-soft p-3 text-sm hidden"></div>
+    </form>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="panel p-5 xl:col-span-2">
+      <h3 class="font-bold text-lg">Transacoes recentes</h3>
+      <div id="transactions" class="space-y-2 mt-4"></div>
+    </div>
+    <div class="panel p-5">
+      <h3 class="font-bold text-lg">Alertas e categorias</h3>
+      <div id="alerts" class="space-y-2 mt-4"></div>
+      <div id="categories" class="space-y-2 mt-4"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
+
+async function loadFinance() {
+  const response = await fetch('/api/finance/summary');
+  const data = await response.json();
+  const summary = data.summary;
+  document.getElementById('income').innerText = money(summary.income);
+  document.getElementById('expenses').innerText = money(summary.total_expenses);
+  document.getElementById('balance').innerText = money(summary.projected_balance);
+  document.getElementById('daily-limit').innerText = money(summary.recommended_daily_limit);
+  document.getElementById('monthly-income').value = summary.profile.monthly_income || '';
+  document.getElementById('extra-income').value = summary.profile.extra_income || '';
+  document.getElementById('payday').value = summary.profile.payday || 1;
+  document.getElementById('savings-goal').value = summary.profile.monthly_savings_goal || '';
+  document.getElementById('reserve-goal').value = summary.profile.emergency_reserve_goal || '';
+  document.getElementById('current-reserve').value = summary.profile.current_emergency_reserve || '';
+  renderTransactions(data.transactions || []);
+  renderAlerts(summary.alerts || []);
+  renderCategories(summary.by_category || []);
+}
+
+function renderTransactions(items) {
+  document.getElementById('transactions').innerHTML = items.length ? items.map(item => `
+    <div class="panel-soft p-3 flex items-center justify-between gap-3">
+      <div><p class="font-semibold">${escapeHtml(item.description || item.category)}</p><p class="muted text-xs">${escapeHtml(item.category)} | ${escapeHtml(item.source)}</p></div>
+      <p class="font-bold ${item.transaction_type === 'income' ? 'text-green-300' : 'text-red-300'}">${item.transaction_type === 'income' ? '+' : '-'} ${money(item.amount)}</p>
+    </div>`).join('') : '<p class="muted text-sm">Sem transacoes.</p>';
+}
+
+function renderAlerts(items) {
+  document.getElementById('alerts').innerHTML = items.map(item => `<div class="panel-soft p-3 text-sm">${escapeHtml(item)}</div>`).join('');
+}
+
+function renderCategories(items) {
+  document.getElementById('categories').innerHTML = items.map(item => `<div class="flex justify-between text-sm"><span>${escapeHtml(item.category)}</span><span>${money(item.amount)}</span></div>`).join('');
+}
+
+document.getElementById('profile-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  await fetch('/finance/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+    monthly_income: document.getElementById('monthly-income').value,
+    extra_income: document.getElementById('extra-income').value,
+    payday: document.getElementById('payday').value,
+    monthly_savings_goal: document.getElementById('savings-goal').value,
+    emergency_reserve_goal: document.getElementById('reserve-goal').value,
+    current_emergency_reserve: document.getElementById('current-reserve').value
+  })});
+  await loadFinance();
+});
+
+document.getElementById('transaction-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  await fetch('/finance/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+    transaction_type: document.getElementById('transaction-type').value,
+    amount: document.getElementById('transaction-amount').value,
+    description: document.getElementById('transaction-description').value,
+    category: document.getElementById('transaction-category').value
+  })});
+  event.target.reset();
+  await loadFinance();
+});
+
+document.getElementById('purchase-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const response = await fetch('/finance/purchase-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+    name: document.getElementById('purchase-name').value,
+    amount: document.getElementById('purchase-amount').value,
+    priority: document.getElementById('purchase-priority').value || 5,
+    payment_type: document.getElementById('payment-type').value,
+    installments: document.getElementById('installments').value || 1
+  })});
+  const result = await response.json();
+  const box = document.getElementById('purchase-result');
+  box.classList.remove('hidden');
+  box.innerHTML = `<p class="font-bold uppercase">${escapeHtml(result.decision || 'erro')}</p><p class="mt-2">${escapeHtml(result.justification || result.error)}</p>`;
+});
+
+function escapeHtml(value) {
+  return String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+loadFinance();
+</script>
+{% endblock %}

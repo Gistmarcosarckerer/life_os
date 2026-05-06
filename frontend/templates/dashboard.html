@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block eyebrow %}Central operacional{% endblock %}
+{% block title %}Dashboard principal{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="panel p-5">
+      <p class="muted text-sm">Saude financeira</p>
+      <p class="text-4xl font-extrabold mt-2" id="finance-health">{{ finance.health_score }}</p>
+      <p class="muted text-sm mt-2" id="finance-risk">Risco {{ finance.risk_level }}</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Gasto do mes</p>
+      <p class="text-3xl font-extrabold mt-2" id="month-spend">R$ {{ "%.2f"|format(finance.total_expenses) }}</p>
+      <p class="muted text-sm mt-2" id="spent-percent">{{ finance.income_spent_percent }}% da renda</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Saldo previsto</p>
+      <p class="text-3xl font-extrabold mt-2" id="projected-balance">R$ {{ "%.2f"|format(finance.projected_balance) }}</p>
+      <p class="muted text-sm mt-2" id="daily-limit">Teto diario R$ {{ "%.2f"|format(finance.recommended_daily_limit) }}</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Foco atual</p>
+      <p class="text-4xl font-extrabold mt-2" id="focus-score">{{ focus_score }}</p>
+      <p class="muted text-sm mt-2" id="state">{{ state }}</p>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="panel p-5 xl:col-span-2">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="muted text-sm">Missao automatica</p>
+          <h3 class="text-2xl font-bold mt-1" id="mission">{{ main_task }}</h3>
+        </div>
+        <span class="badge bg-green-400 text-gray-950" id="tracker-status">online</span>
+      </div>
+      <p class="text-gray-300 mt-4" id="recommendation">Calculando recomendacao...</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">
+        <div class="panel-soft p-4">
+          <p class="muted text-sm">Recomendacao financeira</p>
+          <p class="font-semibold mt-2" id="finance-recommendation">{{ finance.recommendation }}</p>
+        </div>
+        <div class="panel-soft p-4">
+          <p class="muted text-sm">Atividade atual</p>
+          <p class="font-semibold mt-2" id="current-app">Aguardando captura</p>
+          <p class="muted text-sm mt-1" id="current-window"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel p-5">
+      <p class="muted text-sm">Alertas inteligentes</p>
+      <div id="finance-alerts" class="space-y-2 mt-4">
+        {% for alert in finance.alerts %}
+        <div class="panel-soft p-3 text-sm">{{ alert }}</div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="panel p-5 xl:col-span-2">
+      <div class="flex items-center justify-between gap-3">
+        <p class="muted text-sm">Transacoes recentes</p>
+        <a href="/finance" class="text-sm text-green-300 font-semibold">Abrir financeiro</a>
+      </div>
+      <div id="recent-transactions" class="space-y-2 mt-4"></div>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Telegram</p>
+      <p class="font-semibold mt-2" id="telegram-status">verificando</p>
+      <div id="telegram-entries" class="space-y-2 mt-4"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
+
+async function refreshDashboard() {
+  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes] = await Promise.all([
+    fetch('/life-status'),
+    fetch('/api/finance/summary'),
+    fetch('/tracker-status'),
+    fetch('/telegram/status'),
+    fetch('/telegram/entries?limit=4')
+  ]);
+  const life = await lifeRes.json();
+  const financePayload = await financeRes.json();
+  const tracker = await trackerRes.json();
+  const telegram = await telegramRes.json();
+  const entries = await entriesRes.json();
+  const finance = financePayload.summary;
+
+  document.getElementById('finance-health').innerText = finance.health_score;
+  document.getElementById('finance-risk').innerText = `Risco ${finance.risk_level}`;
+  document.getElementById('month-spend').innerText = money(finance.total_expenses);
+  document.getElementById('spent-percent').innerText = `${finance.income_spent_percent}% da renda`;
+  document.getElementById('projected-balance').innerText = money(finance.projected_balance);
+  document.getElementById('daily-limit').innerText = `Teto diario ${money(finance.recommended_daily_limit)}`;
+  document.getElementById('finance-recommendation').innerText = finance.recommendation;
+  document.getElementById('focus-score').innerText = life.focus_score;
+  document.getElementById('state').innerText = life.estado_atual;
+  document.getElementById('mission').innerText = life.missao_atual ? life.missao_atual.name : 'Nenhuma missao cadastrada';
+  document.getElementById('recommendation').innerText = life.recomendacao;
+  document.getElementById('tracker-status').innerText = tracker.running ? 'tracker ativo' : 'tracker parado';
+  document.getElementById('telegram-status').innerText = telegram.running ? 'Bot ativo' : (telegram.configured ? 'Bot configurado, parado' : 'Token nao configurado');
+
+  const activity = life.atividade_atual || tracker.current_activity;
+  document.getElementById('current-app').innerText = activity ? `${activity.app_name} | ${activity.category}` : 'Aguardando captura';
+  document.getElementById('current-window').innerText = activity ? (activity.window_title || 'janela sem titulo') : '';
+
+  renderAlerts(finance.alerts || []);
+  renderTransactions(financePayload.transactions || []);
+  renderTelegram(entries.entries || []);
+}
+
+function renderAlerts(alerts) {
+  document.getElementById('finance-alerts').innerHTML = alerts.map(alert =>
+    `<div class="panel-soft p-3 text-sm">${escapeHtml(alert)}</div>`
+  ).join('');
+}
+
+function renderTransactions(transactions) {
+  const html = transactions.length ? transactions.map(item => `
+    <div class="flex items-center justify-between gap-3 panel-soft p-3">
+      <div>
+        <p class="font-semibold">${escapeHtml(item.description || item.category)}</p>
+        <p class="muted text-xs">${escapeHtml(item.category)} | ${escapeHtml(item.source)}</p>
+      </div>
+      <p class="font-bold ${item.transaction_type === 'income' ? 'text-green-300' : 'text-red-300'}">${item.transaction_type === 'income' ? '+' : '-'} ${money(item.amount)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Sem transacoes ainda.</p>';
+  document.getElementById('recent-transactions').innerHTML = html;
+}
+
+function renderTelegram(entries) {
+  document.getElementById('telegram-entries').innerHTML = entries.length ? entries.map(entry => `
+    <div class="panel-soft p-3">
+      <p class="text-sm font-semibold">${escapeHtml(entry.interpreted_text)}</p>
+      <p class="muted text-xs mt-1">${escapeHtml(entry.entry_type)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Sem registros.</p>';
+}
+
+function escapeHtml(value) {
+  return String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+refreshDashboard();
+setInterval(refreshDashboard, 5000);
+</script>
+{% endblock %}

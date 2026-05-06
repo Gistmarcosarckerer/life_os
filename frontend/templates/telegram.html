@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block eyebrow %}Entradas moveis{% endblock %}
+{% block title %}Registros Telegram{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="panel p-5">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="muted text-sm">Status do bot</p>
+        <h3 id="telegram-status" class="text-2xl font-bold mt-1">Verificando</h3>
+      </div>
+      <span class="badge bg-gray-800 text-gray-300">TELEGRAM_BOT_TOKEN</span>
+    </div>
+  </section>
+  <section class="panel p-5">
+    <h3 class="font-bold text-lg">Ultimos registros</h3>
+    <div id="entries" class="space-y-2 mt-4"></div>
+  </section>
+</div>
+<script>
+async function loadTelegram() {
+  const [statusRes, entriesRes] = await Promise.all([fetch('/telegram/status'), fetch('/telegram/entries?limit=30')]);
+  const status = await statusRes.json();
+  const entries = await entriesRes.json();
+  document.getElementById('telegram-status').innerText = status.running ? 'Bot ativo' : (status.configured ? `Parado: ${status.last_error || 'aguardando'}` : 'Token nao configurado');
+  document.getElementById('entries').innerHTML = entries.entries.length ? entries.entries.map(entry => `
+    <div class="panel-soft p-3">
+      <div class="flex flex-col md:flex-row md:justify-between gap-2">
+        <p class="font-semibold">${escapeHtml(entry.interpreted_text)}</p>
+        <p class="muted text-xs">${escapeHtml(entry.entry_type)}</p>
+      </div>
+      <p class="muted text-sm mt-1">${escapeHtml(entry.raw_text)}</p>
+      <p class="text-gray-300 text-sm mt-2">${escapeHtml(entry.recommendation)}</p>
+    </div>`).join('') : '<p class="muted">Nenhum registro recebido.</p>';
+}
+function escapeHtml(value) { return String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;'); }
+loadTelegram();
+setInterval(loadTelegram, 5000);
+</script>
+{% endblock %}

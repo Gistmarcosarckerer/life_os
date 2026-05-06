@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: life-os
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend.app:app
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LIFE_OS_DISABLE_TRACKER
+        value: "true"
+      - key: LIFE_OS_ENABLE_WINDOWS_TRACKER
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
