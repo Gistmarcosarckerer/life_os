@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+  <header class="border-b border-gray-800 pb-5">
+    <p class="text-sm uppercase tracking-wider text-gray-400">Sistema de decisao pessoal</p>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+      <h1 class="text-3xl font-semibold mt-1">LIFE OS</h1>
+      <p class="text-sm text-gray-400">Atualizacao automatica: <span id="updated-at">aguardando</span></p>
+    </div>
+  </header>
+
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-gray-800 p-4 rounded">
+      <h2 class="text-sm text-gray-400">Focus Score</h2>
+      <p class="text-4xl font-semibold mt-2" id="focus-score">{{ focus_score }}</p>
+      <p class="text-sm text-gray-400 mt-2" id="focus-metrics">coletando dados</p>
+    </div>
+    <div class="bg-gray-800 p-4 rounded md:col-span-2">
+      <h2 class="text-sm text-gray-400">Missao Atual</h2>
+      <p class="text-2xl font-semibold mt-2" id="mission">{{ main_task }}</p>
+      <p class="text-sm text-gray-400 mt-2" id="mission-score">score recalculado automaticamente</p>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="bg-gray-800 p-4 rounded lg:col-span-2">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm text-gray-400">Estado</h2>
+          <p class="text-2xl font-semibold mt-2" id="state">{{ state }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-gray-400">Rastreador</p>
+          <p class="font-medium mt-2" id="tracker-status">verificando</p>
+        </div>
+      </div>
+      <p class="text-gray-300 mt-4" id="recommendation">Calculando recomendacao...</p>
+      <div class="mt-4 border-t border-gray-700 pt-4">
+        <h2 class="text-sm text-gray-400">Atividade Atual</h2>
+        <p class="font-medium mt-2" id="current-app">nenhuma captura ainda</p>
+        <p class="text-sm text-gray-400 mt-1" id="current-window"></p>
+      </div>
+    </div>
+
+    <form id="task-form" class="bg-gray-800 p-4 rounded space-y-3">
+      <h2 class="text-sm text-gray-400">Nova Tarefa</h2>
+      <input id="task-name" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2" placeholder="Nome da tarefa" required>
+      <div class="grid grid-cols-3 gap-2">
+        <label class="text-sm text-gray-300">
+          Impacto
+          <input id="task-impact" type="number" min="1" max="10" value="7" class="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-2">
+        </label>
+        <label class="text-sm text-gray-300">
+          Urgencia
+          <input id="task-urgency" type="number" min="1" max="10" value="6" class="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-2">
+        </label>
+        <label class="text-sm text-gray-300">
+          Energia
+          <input id="task-energy" type="number" min="1" max="10" value="5" class="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-2">
+        </label>
+      </div>
+      <button class="w-full bg-white text-gray-900 px-4 py-2 rounded font-medium" type="submit">
+        Adicionar
+      </button>
+      <p id="task-error" class="text-sm text-red-300"></p>
+    </form>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="bg-gray-800 p-4 rounded lg:col-span-2">
+      <div class="flex items-center justify-between gap-4 mb-3">
+        <h2 class="text-sm text-gray-400">Fila de Decisao</h2>
+        <button id="refresh-button" class="bg-gray-700 px-3 py-2 rounded text-sm">Atualizar</button>
+      </div>
+      <div id="task-list" class="space-y-2"></div>
+    </div>
+
+    <div class="bg-gray-800 p-4 rounded">
+      <h2 class="text-sm text-gray-400">Apps na Janela de Foco</h2>
+      <div id="top-apps" class="space-y-2 mt-3"></div>
+    </div>
+  </section>
+
+  <section class="bg-gray-800 p-4 rounded">
+    <div class="flex items-center justify-between gap-4 mb-3">
+      <div>
+        <h2 class="text-sm text-gray-400">Telegram</h2>
+        <p class="font-medium mt-1" id="telegram-status">verificando</p>
+      </div>
+      <p class="text-sm text-gray-400">Ultimos registros recebidos</p>
+    </div>
+    <div id="telegram-entries" class="space-y-2"></div>
+  </section>
+</div>
+
+<script>
+const POLL_MS = 3000;
+
+async function refreshLifeStatus() {
+  const [statusResponse, trackerResponse, telegramResponse] = await Promise.all([
+    fetch('/life-status'),
+    fetch('/tracker-status'),
+    fetch('/telegram/status')
+  ]);
+  const data = await statusResponse.json();
+  const tracker = await trackerResponse.json();
+  const telegram = await telegramResponse.json();
+
+  document.getElementById('focus-score').innerText = data.focus_score;
+  document.getElementById('state').innerText = data.estado_atual;
+  document.getElementById('recommendation').innerText = data.recomendacao;
+  document.getElementById('tracker-status').innerText = tracker.running ? 'ativo' : 'parado';
+  document.getElementById('telegram-status').innerText = telegram.running
+    ? 'bot ativo'
+    : (telegram.configured ? `parado: ${telegram.last_error || 'aguardando'}` : 'token nao configurado');
+  document.getElementById('updated-at').innerText = formatTime(data.atualizado_em);
+
+  const metrics = data.metricas;
+  document.getElementById('focus-metrics').innerText =
+    `${metrics.trocas_contexto} trocas | ${metrics.minutos_produtivos}m produtivos | ${metrics.minutos_distracao}m distracao`;
+
+  if (data.missao_atual) {
+    document.getElementById('mission').innerText = data.missao_atual.name;
+    document.getElementById('mission-score').innerText =
+      `score ${data.missao_atual.score} | energia ${data.missao_atual.energy_required} | ${data.missao_atual.status}`;
+  } else {
+    document.getElementById('mission').innerText = 'Nenhuma missao cadastrada';
+    document.getElementById('mission-score').innerText = 'cadastre uma tarefa para o sistema decidir';
+  }
+
+  const activity = data.atividade_atual || tracker.current_activity;
+  if (activity) {
+    document.getElementById('current-app').innerText =
+      `${activity.app_name} | ${activity.category} | ${Math.round(activity.duration_seconds)}s`;
+    document.getElementById('current-window').innerText = activity.window_title || 'janela sem titulo';
+  } else {
+    document.getElementById('current-app').innerText = 'nenhuma captura ainda';
+    document.getElementById('current-window').innerText = '';
+  }
+
+  renderTopApps(data.top_apps || []);
+}
+
+async function refreshTasks() {
+  const response = await fetch('/tasks?include_done=false');
+  const data = await response.json();
+  const list = document.getElementById('task-list');
+  list.innerHTML = '';
+
+  if (!data.tasks.length) {
+    list.innerHTML = '<p class="text-gray-400">Nenhuma tarefa pendente.</p>';
+    return;
+  }
+
+  data.tasks.forEach(task => {
+    const item = document.createElement('div');
+    const isActive = task.status === 'active';
+    item.className = `flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-gray-900 border rounded p-3 ${isActive ? 'border-green-400' : 'border-gray-700'}`;
+    item.innerHTML = `
+      <div>
+        <p class="font-medium">${escapeHtml(task.name)}</p>
+        <p class="text-sm text-gray-400">Impacto ${task.impact} &middot; Urgencia ${task.urgency} &middot; Energia ${task.energy_required} &middot; ${task.status}</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="complete bg-green-500 text-gray-950 px-3 py-2 rounded text-sm font-medium" data-id="${task.id}">Concluir</button>
+        <button class="delete bg-gray-700 px-3 py-2 rounded text-sm" data-id="${task.id}">Remover</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  document.querySelectorAll('.complete').forEach(button => {
+    button.addEventListener('click', async () => {
+      await fetch(`/tasks/${button.dataset.id}/complete`, { method: 'POST' });
+      await refreshAll();
+    });
+  });
+
+  document.querySelectorAll('.delete').forEach(button => {
+    button.addEventListener('click', async () => {
+      await fetch(`/tasks/${button.dataset.id}`, { method: 'DELETE' });
+      await refreshAll();
+    });
+  });
+}
+
+async function refreshTelegramEntries() {
+  const response = await fetch('/telegram/entries?limit=8');
+  const data = await response.json();
+  const container = document.getElementById('telegram-entries');
+  container.innerHTML = '';
+
+  if (!data.entries.length) {
+    container.innerHTML = '<p class="text-gray-400">Nenhum registro recebido ainda.</p>';
+    return;
+  }
+
+  data.entries.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'bg-gray-900 border border-gray-700 rounded p-3';
+    item.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <p class="font-medium">${escapeHtml(entry.interpreted_text)}</p>
+        <p class="text-xs text-gray-400">${escapeHtml(entry.entry_type)} | ${formatTime(entry.created_at)}</p>
+      </div>
+      <p class="text-sm text-gray-400 mt-1">${escapeHtml(entry.raw_text)}</p>
+      <p class="text-sm text-gray-300 mt-2">${escapeHtml(entry.recommendation || '')}</p>
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function refreshAll() {
+  await refreshLifeStatus();
+  await Promise.all([refreshTasks(), refreshTelegramEntries()]);
+}
+
+function renderTopApps(apps) {
+  const container = document.getElementById('top-apps');
+  container.innerHTML = '';
+
+  if (!apps.length) {
+    container.innerHTML = '<p class="text-gray-400">Coletando dados.</p>';
+    return;
+  }
+
+  apps.forEach(app => {
+    const item = document.createElement('div');
+    item.className = 'flex justify-between gap-3 bg-gray-900 border border-gray-700 rounded p-2 text-sm';
+    item.innerHTML = `
+      <span>${escapeHtml(app.app_name)}</span>
+      <span class="text-gray-400">${app.minutes}m | ${app.category}</span>
+    `;
+    container.appendChild(item);
+  });
+}
+
+document.getElementById('task-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const error = document.getElementById('task-error');
+  error.innerText = '';
+
+  const response = await fetch('/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('task-name').value,
+      impact: document.getElementById('task-impact').value,
+      urgency: document.getElementById('task-urgency').value,
+      energy_required: document.getElementById('task-energy').value
+    })
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    error.innerText = data.error || 'Nao foi possivel criar a tarefa.';
+    return;
+  }
+
+  event.target.reset();
+  document.getElementById('task-impact').value = 7;
+  document.getElementById('task-urgency').value = 6;
+  document.getElementById('task-energy').value = 5;
+  await refreshAll();
+});
+
+document.getElementById('refresh-button').addEventListener('click', refreshAll);
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function formatTime(value) {
+  if (!value) {
+    return 'aguardando';
+  }
+  return new Date(value).toLocaleTimeString();
+}
+
+refreshAll();
+setInterval(refreshAll, POLL_MS);
+</script>
+{% endblock %}
