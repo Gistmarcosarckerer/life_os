@@ -38,6 +38,11 @@ def telegram_page():
     return render_template("telegram.html")
 
 
+@dashboard_bp.route("/gym")
+def gym_page():
+    return render_template("gym.html")
+
+
 @dashboard_bp.route("/settings")
 def settings_page():
     return render_template("settings.html")

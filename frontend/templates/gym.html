@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block eyebrow %}Corpo e energia{% endblock %}
+{% block title %}Gym{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="panel p-5">
+      <p class="muted text-sm">Status da semana</p>
+      <p class="text-4xl font-extrabold mt-2">Base</p>
+      <p class="muted text-sm mt-2">Pronto para registrar treinos pelo Telegram.</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Comando Telegram</p>
+      <p class="text-lg font-bold mt-2">treino peito concluido</p>
+      <p class="muted text-sm mt-2">Salva o treino como registro operacional.</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Decisao do LIFE OS</p>
+      <p class="text-lg font-bold mt-2">Ajustar energia</p>
+      <p class="muted text-sm mt-2">O modulo vai evoluir para cruzar treino, foco e recuperacao.</p>
+    </div>
+  </section>
+
+  <section class="panel p-5">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <p class="muted text-sm">Proxima evolucao</p>
+        <h3 class="text-2xl font-bold mt-1">Plano de treino inteligente</h3>
+      </div>
+      <span class="badge bg-green-400 text-gray-950">nova aba ativa</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-5">
+      <div class="panel-soft p-4">
+        <p class="font-bold">Peito</p>
+        <p class="muted text-sm mt-1">Forca, volume e recuperacao.</p>
+      </div>
+      <div class="panel-soft p-4">
+        <p class="font-bold">Costas</p>
+        <p class="muted text-sm mt-1">Postura e equilibrio.</p>
+      </div>
+      <div class="panel-soft p-4">
+        <p class="font-bold">Pernas</p>
+        <p class="muted text-sm mt-1">Energia e consistencia.</p>
+      </div>
+      <div class="panel-soft p-4">
+        <p class="font-bold">Cardio</p>
+        <p class="muted text-sm mt-1">Saude e disposicao.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
