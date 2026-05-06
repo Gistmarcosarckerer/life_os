@@ -34,6 +34,14 @@ def apply_lightweight_migrations():
             if "created_at" not in columns:
                 connection.execute(text("ALTER TABLE expenses ADD COLUMN created_at DATETIME"))
 
+    if "mobile_entries" in inspector.get_table_names():
+        columns = {column["name"] for column in inspector.get_columns("mobile_entries")}
+        with engine.begin() as connection:
+            if "chat_id" not in columns:
+                connection.execute(text("ALTER TABLE mobile_entries ADD COLUMN chat_id VARCHAR DEFAULT '' NOT NULL"))
+            if "username" not in columns:
+                connection.execute(text("ALTER TABLE mobile_entries ADD COLUMN username VARCHAR DEFAULT '' NOT NULL"))
+
 
 @contextmanager
 def session_scope():

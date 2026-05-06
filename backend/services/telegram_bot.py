@@ -89,7 +89,13 @@ class TelegramBotService:
 
         async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text = update.message.text or ""
-            response = process_telegram_message(text)
+            user = update.effective_user
+            chat = update.effective_chat
+            response = process_telegram_message(
+                text,
+                chat_id=str(chat.id) if chat else "",
+                username=user.username or user.full_name if user else "",
+            )
             await update.message.reply_text(response)
 
         application = Application.builder().token(self.token).build()
@@ -109,7 +115,7 @@ class TelegramBotService:
 telegram_bot_service = TelegramBotService()
 
 
-def process_telegram_message(text: str) -> str:
+def process_telegram_message(text: str, chat_id: str = "", username: str = "") -> str:
     normalized = normalize_text(text)
     try:
         with session_scope() as session:
@@ -130,6 +136,8 @@ def process_telegram_message(text: str) -> str:
                 raw_text=text,
                 interpreted_text=interpretation.interpreted_text,
                 recommendation=recommendation,
+                chat_id=chat_id,
+                username=username,
             )
 
         return (

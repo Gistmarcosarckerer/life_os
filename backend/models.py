@@ -39,6 +39,8 @@ class MobileEntry(Base):
     raw_text = Column(Text, nullable=False)
     interpreted_text = Column(Text, nullable=False)
     recommendation = Column(Text, nullable=False, default="")
+    chat_id = Column(String, nullable=False, default="")
+    username = Column(String, nullable=False, default="")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 

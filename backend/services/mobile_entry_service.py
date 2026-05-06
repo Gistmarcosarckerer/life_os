@@ -9,6 +9,8 @@ def serialize_mobile_entry(entry: MobileEntry) -> dict:
         "raw_text": entry.raw_text,
         "interpreted_text": entry.interpreted_text,
         "recommendation": entry.recommendation,
+        "chat_id": entry.chat_id,
+        "username": entry.username,
         "created_at": entry.created_at.isoformat() if entry.created_at else None,
     }
 
@@ -29,6 +31,8 @@ def create_mobile_entry(
     raw_text: str,
     interpreted_text: str,
     recommendation: str = "",
+    chat_id: str = "",
+    username: str = "",
 ) -> MobileEntry:
     entry = MobileEntry(
         source="telegram",
@@ -36,11 +40,23 @@ def create_mobile_entry(
         raw_text=raw_text,
         interpreted_text=interpreted_text,
         recommendation=recommendation,
+        chat_id=str(chat_id or ""),
+        username=str(username or ""),
     )
     session.add(entry)
     session.flush()
     session.refresh(entry)
     return entry
+
+
+def get_telegram_debug(session, limit: int = 10) -> dict:
+    entries = list_recent_mobile_entries(session, limit=limit)
+    latest = entries[0] if entries else None
+    return {
+        "chat_id": latest.get("chat_id", "") if latest else "",
+        "username": latest.get("username", "") if latest else "",
+        "messages": entries,
+    }
 
 
 def save_expense(session, amount: float, description: str) -> Expense:

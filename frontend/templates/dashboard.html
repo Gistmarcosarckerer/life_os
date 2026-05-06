@@ -73,24 +73,47 @@
       <div id="telegram-entries" class="space-y-2 mt-4"></div>
     </div>
   </section>
+
+  <section class="panel p-5">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <p class="muted text-sm">Debug Telegram</p>
+        <h3 class="text-xl font-bold mt-1">Conexao e ultimas mensagens</h3>
+      </div>
+      <span class="badge bg-gray-800 text-gray-300">diagnostico</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+      <div class="panel-soft p-4">
+        <p class="muted text-sm">chat_id</p>
+        <p class="font-mono text-sm mt-2" id="telegram-debug-chat">aguardando</p>
+      </div>
+      <div class="panel-soft p-4">
+        <p class="muted text-sm">username</p>
+        <p class="font-mono text-sm mt-2" id="telegram-debug-user">aguardando</p>
+      </div>
+    </div>
+    <div id="telegram-debug-messages" class="space-y-2 mt-4"></div>
+  </section>
 </div>
 
 <script>
 const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
 
 async function refreshDashboard() {
-  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes] = await Promise.all([
+  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes, debugRes] = await Promise.all([
     fetch('/life-status'),
     fetch('/api/finance/summary'),
     fetch('/tracker-status'),
     fetch('/telegram/status'),
-    fetch('/telegram/entries?limit=4')
+    fetch('/telegram/entries?limit=4'),
+    fetch('/telegram/debug?limit=6')
   ]);
   const life = await lifeRes.json();
   const financePayload = await financeRes.json();
   const tracker = await trackerRes.json();
   const telegram = await telegramRes.json();
   const entries = await entriesRes.json();
+  const debug = await debugRes.json();
   const finance = financePayload.summary;
 
   document.getElementById('finance-health').innerText = finance.health_score;
@@ -114,6 +137,7 @@ async function refreshDashboard() {
   renderAlerts(finance.alerts || []);
   renderTransactions(financePayload.transactions || []);
   renderTelegram(entries.entries || []);
+  renderTelegramDebug(debug);
 }
 
 function renderAlerts(alerts) {
@@ -142,6 +166,21 @@ function renderTelegram(entries) {
       <p class="muted text-xs mt-1">${escapeHtml(entry.entry_type)}</p>
     </div>
   `).join('') : '<p class="muted text-sm">Sem registros.</p>';
+}
+
+function renderTelegramDebug(debug) {
+  document.getElementById('telegram-debug-chat').innerText = debug.chat_id || 'nenhuma mensagem';
+  document.getElementById('telegram-debug-user').innerText = debug.username || 'nenhum usuario';
+  const messages = debug.messages || [];
+  document.getElementById('telegram-debug-messages').innerHTML = messages.length ? messages.map(item => `
+    <div class="panel-soft p-3">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <p class="text-sm font-semibold">${escapeHtml(item.raw_text)}</p>
+        <p class="muted text-xs">${escapeHtml(item.username || 'sem username')} | ${escapeHtml(item.chat_id || 'sem chat')}</p>
+      </div>
+      <p class="muted text-xs mt-1">${escapeHtml(item.interpreted_text)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Nenhuma mensagem recebida pelo Telegram ainda.</p>';
 }
 
 function escapeHtml(value) {
