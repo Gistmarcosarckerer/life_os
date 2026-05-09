@@ -1,25 +1,59 @@
 # LIFE OS
 
-Sistema operacional pessoal em Flask para rastrear atividade, calcular foco, decidir a missao atual e receber entradas pelo Telegram.
+LIFE OS e um sistema operacional pessoal para decisao diaria. O objetivo nao e ser um dashboard nem um gerenciador de tarefas comum. O sistema captura sinais do usuario, interpreta contexto, calcula foco, organiza prioridades e decide qual deve ser a proxima missao operacional.
 
-## Versoes
+## Visao geral
 
-O Codex cria snapshots em `versions/` a cada atualizacao relevante.
+O LIFE OS trabalha no fluxo:
 
-- `versions/v0.1.0`: nucleo inicial de foco, atividade e missao.
-- `versions/v0.2.0`: CRUD de tarefas e rastreador automatico em background.
-- `versions/v0.2.1`: correcao do executavel que abria paginas infinitas.
-- `versions/v0.3.0`: captura real consolidada, focus score e missao em tempo real.
-- `versions/v0.4.0`: integracao com Telegram para entradas moveis.
-- `versions/v0.5.0`: preparacao para deploy em Render/Railway com Gunicorn.
-- `versions/v0.6.0`: modulo financeiro profissional e dashboard premium.
-- `versions/v0.7.0`: parser NLP livre para Telegram/Siri e entradas brutas.
+```text
+INPUTS -> PROCESSAMENTO -> DECISAO -> ACAO
+```
 
-Para voltar manualmente, copie os arquivos da versao desejada de volta para a raiz do projeto.
+Inputs podem vir do Windows, dashboard, Telegram ou Siri/iPhone. O backend interpreta esses dados, salva historico, calcula estado atual e retorna uma recomendacao objetiva.
 
-## Rodar localmente
+## Proposito
+
+- Reduzir carga mental.
+- Automatizar micro-decisoes.
+- Priorizar tarefas por impacto, urgencia e energia.
+- Detectar foco, dispersao e troca de contexto.
+- Registrar dados pessoais sem abrir o dashboard.
+- Apoiar decisoes financeiras e operacionais.
+
+## Funcionalidades principais
+
+- Rastreamento de janela ativa no Windows.
+- Logs de atividade por aplicativo.
+- Calculo automatico de `focus_score`.
+- Deteccao de estado: `flow`, `normal`, `disperso`.
+- Motor de decisao para escolher a missao atual.
+- CRUD de tarefas.
+- Tracker em background junto com o Flask.
+- Integracao Telegram via `python-telegram-bot`.
+- Entrada por Siri/iPhone usando atalho que envia mensagem ao bot do Telegram.
+- Parser NLP simples para linguagem natural.
+- Modulo financeiro com transacoes, renda, metas, resumo mensal e analise de compra.
+- Dashboard premium em HTML + Tailwind CDN.
+- Deploy preparado para Render/Railway com Gunicorn.
+
+## Stack
+
+- Python
+- Flask
+- SQLAlchemy
+- SQLite local
+- PostgreSQL preparado para producao futura
+- HTML + Tailwind CSS via CDN
+- python-dotenv
+- python-telegram-bot
+- Gunicorn
+- PyInstaller para executavel Windows local
+
+## Como rodar localmente
 
 ```powershell
+cd C:\Users\makin\Desktop\life_os\life_os
 pip install -r requirements.txt
 python backend/app.py
 ```
@@ -30,86 +64,9 @@ Acesse:
 http://127.0.0.1:5000
 ```
 
-O painel consulta `/life-status` a cada poucos segundos e atualiza estado, focus score e missao sem intervencao manual.
+## Como rodar em producao
 
-## Variaveis de ambiente
-
-Copie `.env.example` para `.env` em desenvolvimento local.
-
-```text
-TELEGRAM_BOT_TOKEN=
-SECRET_KEY=
-DATABASE_URL=
-ENVIRONMENT=production
-LIFE_OS_DISABLE_TRACKER=true
-LIFE_OS_ENABLE_WINDOWS_TRACKER=false
-```
-
-`DATABASE_URL` e opcional. Sem ela, o sistema usa SQLite em `life_os.db`.
-
-Para PostgreSQL no futuro, defina:
-
-```text
-DATABASE_URL=postgresql://usuario:senha@host:5432/banco
-```
-
-## Telegram
-
-Configure o token do bot antes de iniciar:
-
-```powershell
-$env:TELEGRAM_BOT_TOKEN="seu_token_aqui"
-python backend/app.py
-```
-
-Mensagens aceitas:
-
-```text
-peso 88.1
-sono 6h
-gastei 45 almoco
-gasto 120 mercado
-paguei 950 parcela carro
-recebi 4300 salario
-renda extra 300 freela
-humor 7 energia 6 ansiedade 3
-tarefa revisar PCP impacto 8 urgencia 7 energia 5
-treino peito concluido
-to cansado hoje
-amanha consulta 14h
-dormi mal
-```
-
-O bot analisa toda mensagem automaticamente com heuristicas de NLP simples, classifica em financeiro, saude, humor, produtividade, agenda, treino ou nota geral, salva a entrada bruta em `raw_entries` e responde com a interpretacao. Se o LIFE OS nao entender totalmente, a mensagem nao e perdida: ela fica como `raw_input` para revisao.
-
-## Financeiro
-
-O LIFE OS possui um modulo financeiro em `/finance` com:
-
-- configuracao de renda mensal liquida
-- renda extra opcional
-- dia de recebimento
-- meta de economia mensal
-- reserva de emergencia
-- registro de gastos e renda
-- categorizacao automatica
-- alertas inteligentes
-- limite diario recomendado
-- analise de intencao de compra
-
-Comandos financeiros pelo Telegram:
-
-```text
-gastei 35 almoco
-gasto 120 mercado
-paguei 950 parcela carro
-recebi 4300 salario
-renda extra 300 freela
-```
-
-## Producao
-
-Nao use `python backend/app.py` em producao. Use Gunicorn:
+Nao use o servidor Flask puro em producao. Use Gunicorn:
 
 ```bash
 gunicorn backend.app:app
@@ -121,56 +78,128 @@ O `Procfile` ja esta configurado:
 web: gunicorn backend.app:app
 ```
 
-O tracker de janela ativa do Windows fica desativado por padrao em nuvem Linux. Para PC local Windows, ele pode continuar ativo.
+## Deploy Render
 
-## Deploy no Render
-
-1. Envie o projeto para um repositorio GitHub.
-2. Crie um novo Web Service no Render apontando para o repositorio.
-3. Configure:
+Configuracao recomendada:
 
 ```text
 Build command: pip install -r requirements.txt
 Start command: gunicorn backend.app:app
 ```
 
-4. Configure as variaveis de ambiente:
+Variaveis no Render:
 
 ```text
 ENVIRONMENT=production
-SECRET_KEY=<valor_aleatorio_seguro>
+SECRET_KEY=<valor_seguro>
 TELEGRAM_BOT_TOKEN=<token_do_bot>
+DATABASE_URL=
 LIFE_OS_DISABLE_TRACKER=true
 LIFE_OS_ENABLE_WINDOWS_TRACKER=false
 ```
 
-5. Opcional: configure `DATABASE_URL` para PostgreSQL. Sem isso, o app usa SQLite local do servidor.
-6. Abra a URL publica gerada pelo Render.
+Observacao: SQLite em Render pode ser efemero se nao houver disco persistente. Para uso real continuo, migrar para PostgreSQL.
 
-Tambem existe `render.yaml` para Blueprint Deploy.
+## Variaveis de ambiente
 
-## Deploy no Railway
-
-1. Envie o projeto para GitHub.
-2. No Railway, escolha Deploy from GitHub Repo.
-3. Configure as variaveis:
+Exemplo em `.env.example`:
 
 ```text
+TELEGRAM_BOT_TOKEN=
+SECRET_KEY=
+DATABASE_URL=
 ENVIRONMENT=production
-SECRET_KEY=<valor_aleatorio_seguro>
-TELEGRAM_BOT_TOKEN=<token_do_bot>
 LIFE_OS_DISABLE_TRACKER=true
 LIFE_OS_ENABLE_WINDOWS_TRACKER=false
 ```
 
-4. Railway detecta o `Procfile` e inicia:
+## Integracao Telegram
+
+O bot inicia junto com Flask em thread separada e nao bloqueia o servidor. O token deve vir apenas de `TELEGRAM_BOT_TOKEN`.
+
+Exemplos aceitos:
 
 ```text
-gunicorn backend.app:app
+gastei 80 mercado
+gasto 120 mercado
+paguei 900 carro
+recebi 4300 salario
+peso 88
+sono 6h
+to cansado hoje
+dormi mal
+humor 7 energia 6 ansiedade 3
+tarefa revisar PCP impacto 8 urgencia 7 energia 5
+amanha consulta 14h
+treino peito concluido
 ```
 
-5. Gere um dominio publico no painel do Railway.
-6. Opcional: adicione PostgreSQL e use a variavel `DATABASE_URL`.
+Toda mensagem e salva. Quando o NLP nao entende totalmente, o texto entra em `raw_entries` com status `raw_input`.
+
+## Integracao Siri/iPhone
+
+O caminho atual recomendado e:
+
+```text
+Siri -> Atalho iOS -> Telegram Bot -> Flask backend -> SQLite/PostgreSQL -> Dashboard
+```
+
+O usuario cria um atalho no iPhone para enviar uma mensagem ao bot. O LIFE OS recebe como se fosse uma mensagem normal do Telegram.
+
+## Screenshots
+
+Placeholders para documentacao visual:
+
+```text
+docs/screenshots/dashboard.png
+docs/screenshots/finance.png
+docs/screenshots/telegram-debug.png
+docs/screenshots/mobile-siri-flow.png
+```
+
+## Estrutura de pastas
+
+```text
+backend/
+  app.py
+  database.py
+  models.py
+  engine/
+  routes/
+  services/
+frontend/
+  templates/
+versions/
+executables/
+build/
+dist/
+```
+
+## Comandos uteis
+
+Rodar local:
+
+```powershell
+python backend/app.py
+```
+
+Gerar executavel Windows:
+
+```powershell
+.\build_lifeos.ps1
+```
+
+Publicar alteracoes para GitHub/Render:
+
+```powershell
+.\deploy_lifeos.bat "mensagem da alteracao"
+```
+
+Validar sintaxe Python:
+
+```powershell
+.\.venv\Scripts\python.exe -m compileall backend
+```
 
 ## Endpoints principais
 
@@ -179,64 +208,43 @@ GET /
 GET /healthz
 GET /life-status
 GET /tracker-status
-GET /telegram/status
-GET /telegram/entries
-GET /telegram/raw-entries
+GET /state
+POST /track
+GET /tasks
+POST /tasks
+GET /tasks/<id>
+PATCH /tasks/<id>
+POST /tasks/<id>/complete
+DELETE /tasks/<id>
 GET /finance
 GET /finance/settings
 POST /finance/settings
 GET /finance/transactions
 POST /finance/transactions
 POST /finance/purchase-check
+GET /finance/goals
+POST /finance/goals
 GET /api/finance/summary
-POST /track
+GET /telegram/status
+GET /telegram/entries
+GET /telegram/debug
+GET /telegram/raw-entries
 ```
 
-`/life-status` retorna:
+## Roadmap resumido
 
-- `focus_score`
-- `estado_atual`
-- `missao_atual`
-- `recomendacao`
-- `atividade_atual`
-- `top_apps`
-- `atualizado_em`
-- metricas de troca de contexto e tempo por categoria
+- Migrar dados de producao para PostgreSQL.
+- Adicionar autenticacao.
+- Criar painel de revisao das `raw_entries`.
+- Adicionar calendario real para agenda.
+- Conectar IA externa para interpretacao semantica avancada.
+- Criar modulo de habitos, saude e treino com modelos proprios.
+- Melhorar observabilidade e logs de producao.
 
-## CRUD de tarefas
+## Documentacao complementar
 
-```text
-GET /tasks
-GET /tasks?include_done=false
-POST /tasks
-GET /tasks/<id>
-PATCH /tasks/<id>
-PUT /tasks/<id>
-POST /tasks/<id>/complete
-DELETE /tasks/<id>
-```
-
-## Executavel Windows
-
-O executavel principal deve ficar sempre na pasta raiz:
-
-```text
-C:\Users\makin\Desktop\life_os\life_os\LifeOS.exe
-```
-
-Para gerar ou atualizar:
-
-```powershell
-.\build_lifeos.ps1
-```
-
-Esse script tambem guarda uma copia versionada em `executables/`.
-
-## Arquitetura
-
-- `backend/engine`: integracao com recursos do sistema operacional.
-- `backend/services`: regras de produtividade, rastreamento, tarefas, Telegram e decisao.
-- `backend/services/finance_service.py`: calculos financeiros, alertas, categorias e compra.
-- `backend/routes`: endpoints HTTP.
-- `backend/models.py`: modelos SQLAlchemy.
-- `frontend/templates`: interface simples focada na decisao.
+- `PROJECT_CONTEXT.md`: memoria permanente para Codex/IA.
+- `ARCHITECTURE.md`: arquitetura tecnica e fluxos.
+- `CHANGELOG.md`: historico no formato Keep a Changelog.
+- `VERSIONS.md`: snapshots e estabilidade por versao.
+- `AI_STUDIO_CONTEXT.md`: contexto consolidado para colar no Google AI Studio.

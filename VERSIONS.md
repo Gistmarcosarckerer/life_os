@@ -1,89 +1,198 @@
 # LIFE OS Versions
 
-Este arquivo registra as versoes criadas pelo Codex para facilitar retorno manual.
+Este arquivo documenta os snapshots e a evolucao do projeto. Snapshots ficam em `versions/` e servem como ponto de retorno manual.
 
-## v0.1.0 - Nucleo de foco e atividade
+## Politica de versoes
 
-- Rastreamento de janela ativa no Windows.
-- Logs de atividade no SQLite.
-- Calculo de foco.
-- Deteccao de estado: flow, normal, disperso.
-- Endpoint `/life-status`.
-- Missao automatica inicial baseada em tarefas.
+- Cada atualizacao relevante deve registrar uma entrada neste arquivo.
+- Mudancas grandes devem ter snapshot em `versions/vX.Y.Z`.
+- O snapshot nao substitui Git; ele e uma rede de seguranca local.
+- Para publicar em producao, usar Git/GitHub/Render.
 
-## v0.2.0 - Tarefas e rastreamento continuo
+## Snapshots existentes
 
-- CRUD completo de tarefas via API.
-- Interface para criar, listar, concluir e remover tarefas.
-- Rastreador de atividade iniciado automaticamente junto com o Flask.
-- Endpoint `/tracker-status`.
-- Snapshot local em `versions/v0.2.0`.
+```text
+versions/v0.1.0
+versions/v0.2.0
+versions/v0.2.1
+versions/v0.3.0
+versions/v0.4.0
+versions/v0.4.1
+versions/v0.5.0
+versions/v0.6.0
+versions/v0.7.0
+versions/v0.8.0
+versions/v0.9.0
+```
 
-## v0.2.1 - Correcao do executavel
+## v0.9.0 - Interface inspirada no modelo Centric
 
-- Corrigido loop infinito de paginas ao abrir `LifeOS.exe`.
-- Removido uso de `subprocess` com `sys.executable` no inicializador empacotado.
-- Flask agora roda no mesmo processo do executavel.
-- Navegador abre uma unica vez; se o servidor ja estiver ativo, apenas reutiliza a aba.
-- Templates incluidos no arquivo `.spec` do PyInstaller.
+Status: alteracao visual pronta para validacao no navegador.
 
-## v0.3.0 - Sistema vivo em tempo real
+Principais mudancas:
 
-- Captura real do Windows consolidada por sessao de janela/app.
-- Troca de contexto detectada por mudanca de app ou titulo da janela.
-- Focus score recalculado automaticamente pela janela recente de atividade.
-- Estado `flow`, `normal` ou `disperso` atualizado em tempo real.
-- Missao principal recalculada automaticamente e marcada como `active`.
-- `/life-status` retorna atividade atual, apps dominantes e timestamp de atualizacao.
-- Interface atualiza score, estado, missao, atividade atual, apps e fila de tarefas sem clique.
+- `base.html` reestilizado com fundo claro, sidebar larga, cards arredondados e acento indigo.
+- `dashboard.html` atualizado com cards grandes de metricas no estilo do modelo.
+- CSS global ajustado para manter paginas existentes compativeis.
 
-## v0.4.0 - Integracao Telegram
+Observacoes:
 
-- Adicionado `backend/services/telegram_bot.py`.
-- Bot usa `python-telegram-bot` e le `TELEGRAM_BOT_TOKEN` do ambiente.
-- Parser aceita entradas simples de peso, sono, gastos, humor, tarefas e treino.
-- Novas tabelas: `mobile_entries`, `expenses`, `body_metrics`, `mood_logs`, `task_entries`.
-- Bot salva registros no SQLite e responde com interpretacao e recomendacao.
-- Telegram inicia junto com Flask em thread separada sem travar o servidor.
-- Endpoints `/telegram/status` e `/telegram/entries`.
-- Dashboard mostra status do bot e ultimos registros recebidos.
+- A stack Flask/Jinja foi mantida; o app React do modelo foi usado apenas como referencia visual.
+- Validar responsividade e contraste apos deploy.
 
-## v0.4.1 - Build do executavel na raiz
+## v0.8.0 - Documentacao de longo prazo
 
-- Adicionado `build_lifeos.ps1`.
-- Adicionado `build_lifeos.bat`.
-- Build passa a copiar o executavel para `LifeOS.exe` na pasta principal.
-- Build tambem cria copia historica em `executables/LifeOS-<versao>.exe`.
+Status: documentacao funcional.
 
-## v0.5.0 - Deploy Render/Railway
+Principais mudancas:
 
-- Adicionado `config.py` com variaveis de ambiente e suporte a SQLite/PostgreSQL.
-- Adicionado `Procfile` com `web: gunicorn backend.app:app`.
-- Adicionado `.env.example` sem segredos reais.
-- Adicionado `render.yaml`.
-- `requirements.txt` inclui `python-dotenv`, `python-telegram-bot`, `gunicorn` e `psycopg2-binary`.
-- `app.run` local usa `debug=False` e porta por `PORT`.
-- Gunicorn passa a usar `backend.app:app` em producao.
-- Tracker Windows fica desativado em nuvem Linux por configuracao.
-- Adicionado endpoint `/healthz`.
-- README atualizado com instrucoes de deploy em Render e Railway.
+- README profissional reestruturado.
+- `PROJECT_CONTEXT.md` criado para memoria permanente.
+- `ARCHITECTURE.md` criado para arquitetura tecnica.
+- `CHANGELOG.md` criado no padrao Keep a Changelog.
+- `AI_STUDIO_CONTEXT.md` criado para Google AI Studio.
 
-## v0.6.0 - Financeiro profissional e dashboard premium
+Observacoes:
 
-- Adicionados modelos financeiros: `financial_profile`, `transactions`, `spending_categories`, `purchase_intentions`, `financial_goals`, `monthly_financial_summary`.
-- Adicionado `backend/services/finance_service.py` com resumo mensal, alertas, categorizacao e analise de compra.
-- Adicionado `backend/routes/finance.py`.
-- Novas rotas: `/finance`, `/finance/settings`, `/finance/transactions`, `/finance/purchase-check`, `/finance/goals`, `/api/finance/summary`.
-- Telegram entende `gasto`, `gastei`, `paguei`, `recebi` e `renda extra`.
-- Dashboard principal mostra saude financeira, risco, gasto do mes, saldo previsto e recomendacao.
-- UI reformulada com sidebar, header, cards premium e paginas para Dashboard, Financeiro, Produtividade, Telegram e Configuracoes.
+- Esta versao nao altera regra de negocio.
+- Serve como base para continuidade entre contextos do Codex e outras IAs.
 
 ## v0.7.0 - Parser NLP livre Telegram/Siri
 
-- Adicionado modelo `raw_entries` para guardar toda mensagem recebida, mesmo quando a interpretacao for parcial.
-- Adicionado `backend/services/nlp_service.py` com regex, palavras-chave e heuristicas modulares para futura IA.
-- Telegram passa a classificar mensagens em financeiro, saude, humor, produtividade, agenda, treino e nota geral.
-- Extracao automatica de numeros, datas, horarios, valores monetarios, categorias e sentimento simples.
-- Mensagens financeiras continuam atualizando `transactions` e o dashboard financeiro automaticamente.
-- Novo endpoint `/telegram/raw-entries`.
-- Dashboard principal mostra entradas interpretadas, entradas nao classificadas e sugestoes automaticas.
+Status: funcional, requer validacao em ambiente com dependencias instaladas.
+
+Principais mudancas:
+
+- `raw_entries` criado para registrar toda mensagem.
+- `nlp_service.py` criado.
+- Classificacao: financeiro, saude, humor, produtividade, agenda, treino e nota geral.
+- Extracao: numeros, datas, horarios, valores, categorias e sentimento.
+- Endpoint `/telegram/raw-entries`.
+- Dashboard mostra interpretadas, nao classificadas e sugestoes.
+
+Observacoes:
+
+- Mantem parser legado em `telegram_bot.py`; pode ser removido em refatoracao futura.
+- Toda mensagem deve ser salva, mesmo sem interpretacao total.
+
+## v0.6.0 - Financeiro profissional e dashboard premium
+
+Status: funcional.
+
+Principais mudancas:
+
+- Modelos financeiros adicionados.
+- Dashboard financeiro criado.
+- Alertas inteligentes.
+- Analise de compra.
+- Telegram registra receitas/despesas em `transactions`.
+- UI premium com sidebar e cards.
+
+Observacoes:
+
+- SQLite em Render precisa de disco persistente ou migracao PostgreSQL.
+
+## v0.5.0 - Deploy Render/Railway
+
+Status: funcional.
+
+Principais mudancas:
+
+- Gunicorn.
+- `Procfile`.
+- `render.yaml`.
+- `.env.example`.
+- `config.py`.
+- `/healthz`.
+- Preparacao para PostgreSQL.
+
+Observacoes:
+
+- Render deve usar `gunicorn backend.app:app`.
+- Tracker Windows deve ficar desligado em cloud Linux.
+
+## v0.4.1 - Build do executavel na raiz
+
+Status: funcional local Windows.
+
+Principais mudancas:
+
+- Scripts de build.
+- `LifeOS.exe` na raiz.
+- Copia versionada em `executables/`.
+
+## v0.4.0 - Integracao Telegram
+
+Status: funcional.
+
+Principais mudancas:
+
+- Bot Telegram.
+- Entradas moveis.
+- Tabelas moveis.
+- Endpoints de status e registros.
+
+Observacoes:
+
+- Token nunca deve ser versionado.
+
+## v0.3.0 - Sistema vivo em tempo real
+
+Status: funcional local Windows.
+
+Principais mudancas:
+
+- Captura real consolidada.
+- Focus score automatico.
+- Estado em tempo real.
+- Missao automatica.
+- Dashboard atualiza sem clique.
+
+## v0.2.1 - Correcao do executavel
+
+Status: funcional.
+
+Principais mudancas:
+
+- Corrigido loop infinito de paginas.
+- Flask no mesmo processo do executavel.
+- Navegador abre uma unica vez.
+
+## v0.2.0 - Tarefas e rastreamento continuo
+
+Status: funcional.
+
+Principais mudancas:
+
+- CRUD de tarefas.
+- Rastreador em background.
+- Endpoint `/tracker-status`.
+
+## v0.1.0 - Nucleo inicial
+
+Status: historico.
+
+Principais mudancas:
+
+- Logs de atividade.
+- Calculo de foco.
+- Estado operacional.
+- `/life-status`.
+- Missao automatica inicial.
+
+## Como voltar manualmente para uma versao
+
+1. Escolha um snapshot em `versions/`.
+2. Copie os arquivos da versao desejada para a raiz do projeto.
+3. Rode o sistema localmente.
+4. Se estiver correto, publique com:
+
+```powershell
+.\deploy_lifeos.bat "rollback para vX.Y.Z"
+```
+
+## Observacoes importantes
+
+- `versions/` esta no `.gitignore`; snapshots sao locais.
+- Git continua sendo a fonte de deploy para Render.
+- Para rollback em producao, preferir rollback pelo Render ou Git quando possivel.

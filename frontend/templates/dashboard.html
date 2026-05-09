@@ -3,45 +3,65 @@
 {% block title %}Dashboard principal{% endblock %}
 {% block content %}
 <div class="space-y-6">
-  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div class="panel p-5">
-      <p class="muted text-sm">Saude financeira</p>
-      <p class="text-4xl font-extrabold mt-2" id="finance-health">{{ finance.health_score }}</p>
-      <p class="muted text-sm mt-2" id="finance-risk">Risco {{ finance.risk_level }}</p>
+  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="metric-card metric-orange">
+      <div class="flex items-start justify-between z-10">
+        <div class="metric-icon">F</div>
+        <span class="badge bg-white bg-opacity-20 text-white" id="finance-risk">Risco {{ finance.risk_level }}</span>
+      </div>
+      <div class="z-10">
+        <p class="text-orange-100 font-semibold">Saude financeira</p>
+        <p class="text-4xl font-extrabold mt-1" id="finance-health">{{ finance.health_score }}</p>
+      </div>
     </div>
-    <div class="panel p-5">
-      <p class="muted text-sm">Gasto do mes</p>
-      <p class="text-3xl font-extrabold mt-2" id="month-spend">R$ {{ "%.2f"|format(finance.total_expenses) }}</p>
-      <p class="muted text-sm mt-2" id="spent-percent">{{ finance.income_spent_percent }}% da renda</p>
+    <div class="metric-card metric-indigo">
+      <div class="flex items-start justify-between z-10">
+        <div class="metric-icon">R$</div>
+        <span class="badge bg-white bg-opacity-20 text-white" id="spent-percent">{{ finance.income_spent_percent }}%</span>
+      </div>
+      <div class="z-10">
+        <p class="text-indigo-100 font-semibold">Gasto do mes</p>
+        <p class="text-3xl font-extrabold mt-1" id="month-spend">R$ {{ "%.2f"|format(finance.total_expenses) }}</p>
+      </div>
     </div>
-    <div class="panel p-5">
-      <p class="muted text-sm">Saldo previsto</p>
-      <p class="text-3xl font-extrabold mt-2" id="projected-balance">R$ {{ "%.2f"|format(finance.projected_balance) }}</p>
-      <p class="muted text-sm mt-2" id="daily-limit">Teto diario R$ {{ "%.2f"|format(finance.recommended_daily_limit) }}</p>
+    <div class="metric-card metric-white">
+      <div class="flex items-start justify-between z-10">
+        <div class="metric-icon">S</div>
+        <span class="badge bg-gray-800 text-gray-300" id="daily-limit">Teto R$ {{ "%.2f"|format(finance.recommended_daily_limit) }}</span>
+      </div>
+      <div class="z-10">
+        <p class="muted font-semibold">Saldo previsto</p>
+        <p class="text-3xl font-extrabold mt-1" id="projected-balance">R$ {{ "%.2f"|format(finance.projected_balance) }}</p>
+      </div>
     </div>
-    <div class="panel p-5">
-      <p class="muted text-sm">Foco atual</p>
-      <p class="text-4xl font-extrabold mt-2" id="focus-score">{{ focus_score }}</p>
-      <p class="muted text-sm mt-2" id="state">{{ state }}</p>
+    <div class="metric-card metric-dark">
+      <div class="flex items-start justify-between z-10">
+        <div class="metric-icon">P</div>
+        <span class="badge bg-white bg-opacity-20 text-white" id="state">{{ state }}</span>
+      </div>
+      <div class="z-10">
+        <p class="text-gray-300 font-semibold">Foco atual</p>
+        <p class="text-4xl font-extrabold mt-1" id="focus-score">{{ focus_score }}</p>
+      </div>
     </div>
   </section>
 
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-    <div class="panel p-5 xl:col-span-2">
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="panel p-8 xl:col-span-2">
       <div class="flex items-center justify-between gap-4">
         <div>
-          <p class="muted text-sm">Missao automatica</p>
-          <h3 class="text-2xl font-bold mt-1" id="mission">{{ main_task }}</h3>
+          <p class="muted text-sm font-semibold">Missao automatica</p>
+          <h3 class="text-3xl font-extrabold tracking-tight mt-1" id="mission">{{ main_task }}</h3>
         </div>
         <span class="badge bg-green-400 text-gray-950" id="tracker-status">online</span>
       </div>
-      <p class="text-gray-300 mt-4" id="recommendation">Calculando recomendacao...</p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">
-        <div class="panel-soft p-4">
+      <p class="text-gray-300 mt-5 text-lg" id="recommendation">Calculando recomendacao...</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="panel-soft p-5">
           <p class="muted text-sm">Recomendacao financeira</p>
           <p class="font-semibold mt-2" id="finance-recommendation">{{ finance.recommendation }}</p>
         </div>
-        <div class="panel-soft p-4">
+        <div class="panel-soft p-5">
           <p class="muted text-sm">Atividade atual</p>
           <p class="font-semibold mt-2" id="current-app">Aguardando captura</p>
           <p class="muted text-sm mt-1" id="current-window"></p>
@@ -49,8 +69,8 @@
       </div>
     </div>
 
-    <div class="panel p-5">
-      <p class="muted text-sm">Alertas inteligentes</p>
+    <div class="panel p-6">
+      <p class="muted text-sm font-semibold">Alertas inteligentes</p>
       <div id="finance-alerts" class="space-y-2 mt-4">
         {% for alert in finance.alerts %}
         <div class="panel-soft p-3 text-sm">{{ alert }}</div>
@@ -59,22 +79,22 @@
     </div>
   </section>
 
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-    <div class="panel p-5 xl:col-span-2">
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="panel p-6 xl:col-span-2">
       <div class="flex items-center justify-between gap-3">
         <p class="muted text-sm">Transacoes recentes</p>
         <a href="/finance" class="text-sm text-green-300 font-semibold">Abrir financeiro</a>
       </div>
       <div id="recent-transactions" class="space-y-2 mt-4"></div>
     </div>
-    <div class="panel p-5">
+    <div class="panel p-6">
       <p class="muted text-sm">Telegram</p>
       <p class="font-semibold mt-2" id="telegram-status">verificando</p>
       <div id="telegram-entries" class="space-y-2 mt-4"></div>
     </div>
   </section>
 
-  <section class="panel p-5">
+  <section class="panel p-6">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
       <div>
         <p class="muted text-sm">Debug Telegram</p>
@@ -83,11 +103,11 @@
       <span class="badge bg-gray-800 text-gray-300">diagnostico</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-      <div class="panel-soft p-4">
+      <div class="panel-soft p-5">
         <p class="muted text-sm">chat_id</p>
         <p class="font-mono text-sm mt-2" id="telegram-debug-chat">aguardando</p>
       </div>
-      <div class="panel-soft p-4">
+      <div class="panel-soft p-5">
         <p class="muted text-sm">username</p>
         <p class="font-mono text-sm mt-2" id="telegram-debug-user">aguardando</p>
       </div>
@@ -95,8 +115,8 @@
     <div id="telegram-debug-messages" class="space-y-2 mt-4"></div>
   </section>
 
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-    <div class="panel p-5 xl:col-span-2">
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="panel p-6 xl:col-span-2">
       <div class="flex items-center justify-between gap-3">
         <div>
           <p class="muted text-sm">NLP Telegram/Siri</p>
@@ -106,13 +126,13 @@
       </div>
       <div id="nlp-interpreted" class="space-y-2 mt-4"></div>
     </div>
-    <div class="panel p-5">
+    <div class="panel p-6">
       <p class="muted text-sm">Nao classificadas</p>
       <div id="nlp-unclassified" class="space-y-2 mt-4"></div>
     </div>
   </section>
 
-  <section class="panel p-5">
+  <section class="panel p-6">
     <p class="muted text-sm">Sugestoes automaticas</p>
     <div id="nlp-suggestions" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4"></div>
   </section>
