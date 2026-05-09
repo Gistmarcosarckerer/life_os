@@ -15,6 +15,7 @@ if load_dotenv:
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "life-os-dev-secret")
+    LIFE_OS_ADMIN_PASSWORD = os.getenv("LIFE_OS_ADMIN_PASSWORD", "").strip()
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID", "").strip()
@@ -44,6 +45,12 @@ class Config:
             "postgresql://",
             1,
         )
+
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "true").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
 
 
 config = Config()

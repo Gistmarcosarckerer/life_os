@@ -27,6 +27,7 @@ life_os/
       finance_service.py
       mobile_entry_service.py
       nlp_service.py
+      security_service.py
       productivity_engine.py
       task_service.py
       telegram_bot.py
@@ -104,6 +105,7 @@ Camada de regra de negocio:
 - `mobile_entry_service.py`: registros moveis e debug Telegram.
 - `nlp_service.py`: classificacao e extracao de linguagem natural.
 - `inbox_service.py`: revisao de entradas, correcoes, tarefas/transacoes e regras pessoais.
+- `security_service.py`: login, sessao, CSRF, headers de seguranca e protecao de webhook.
 
 ### `backend/routes`
 
@@ -286,6 +288,14 @@ GET /api/inbox/rules
 POST /api/inbox/rules
 ```
 
+### Autenticacao
+
+```text
+GET /login
+POST /login
+GET /logout
+```
+
 ## Banco de dados
 
 ### Local
@@ -320,6 +330,40 @@ Arquivos relevantes:
 - `render.yaml`
 - `requirements.txt`
 - `config.py`
+
+## Seguranca
+
+Camada principal:
+
+```text
+backend/services/security_service.py
+backend/routes/auth.py
+frontend/templates/login.html
+```
+
+Fluxo:
+
+```text
+request
+  |
+  v
+before_request security
+  |
+  +--> /healthz publico
+  +--> /login publico
+  +--> /finance/bank/webhook valida PLUGGY_WEBHOOK_SECRET
+  +--> demais rotas exigem sessao autenticada
+        |
+        +--> metodos mutaveis exigem X-CSRF-Token
+```
+
+Variavel obrigatoria em producao:
+
+```text
+LIFE_OS_ADMIN_PASSWORD
+```
+
+Se a senha nao estiver configurada em producao, o app bloqueia rotas privadas.
 
 ## Trackers
 

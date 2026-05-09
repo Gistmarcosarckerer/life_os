@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import config
 from backend.database import init_db, session_scope
+from backend.routes.auth import auth_bp
 from backend.routes.dashboard import dashboard_bp
 from backend.routes.finance import finance_bp
 from backend.routes.inbox import inbox_bp
@@ -14,6 +15,7 @@ from backend.services.background_tracker import (
 )
 from backend.services.decision_engine import seed_default_tasks
 from backend.services.finance_service import seed_financial_defaults
+from backend.services.security_service import configure_security
 from backend.services.telegram_bot import telegram_bot_service
 
 
@@ -23,12 +25,14 @@ def create_app():
         template_folder="../frontend/templates",
     )
     app.config["SECRET_KEY"] = config.SECRET_KEY
+    configure_security(app)
 
     init_db()
     with session_scope() as session:
         seed_default_tasks(session)
         seed_financial_defaults(session)
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(finance_bp)
     app.register_blueprint(inbox_bp)

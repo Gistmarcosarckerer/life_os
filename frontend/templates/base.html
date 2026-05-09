@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>Life OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,6 +141,7 @@
         <a class="nav-item {% if request.path == '/gym' %}nav-active{% endif %}" href="/gym"><span class="nav-icon">G</span>Gym</a>
         <a class="nav-item {% if request.path == '/telegram' %}nav-active{% endif %}" href="/telegram"><span class="nav-icon">T</span>Telegram</a>
         <a class="nav-item {% if request.path == '/settings' %}nav-active{% endif %}" href="/settings"><span class="nav-icon">S</span>Configuracoes</a>
+        <a class="nav-item" href="/logout"><span class="nav-icon">X</span>Sair</a>
       </nav>
       <div class="hidden lg:block mt-8 p-5 rounded-3xl border border-indigo-100 bg-indigo-50">
         <p class="text-xs font-extrabold text-indigo-400 uppercase tracking-widest mb-2">System Health</p>

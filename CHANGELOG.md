@@ -4,6 +4,33 @@ Todas as mudancas relevantes do LIFE OS devem ser documentadas neste arquivo.
 
 Formato inspirado em Keep a Changelog.
 
+## v0.12.0 - Seguranca para dados reais
+
+### Added
+
+- Login privado com `LIFE_OS_ADMIN_PASSWORD`.
+- Rota `/login` e template `login.html`.
+- Rota `/logout`.
+- Servico `security_service.py`.
+- CSRF para metodos `POST`, `PUT`, `PATCH` e `DELETE`.
+- Headers de seguranca basicos.
+- Bloqueio de rotas privadas em producao quando senha admin nao estiver configurada.
+- Webhook Pluggy protegido por `PLUGGY_WEBHOOK_SECRET`.
+
+### Changed
+
+- `base.html`, `finance.html` e `inbox.html` passam a enviar token CSRF nos POSTs.
+- Connect Token Pluggy passa a registrar webhook com segredo na query string.
+
+### Fixed
+
+- Acesso publico irrestrito ao dashboard e APIs privadas.
+- Webhook Pluggy sem validacao minima.
+
+### Removed
+
+- Nada removido.
+
 ## v0.11.0 - Inbox inteligente
 
 ### Added

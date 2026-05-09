@@ -98,6 +98,7 @@ TELEGRAM_BOT_TOKEN=<token_do_bot>
 PLUGGY_CLIENT_ID=<client_id_pluggy>
 PLUGGY_CLIENT_SECRET=<client_secret_pluggy>
 PLUGGY_WEBHOOK_SECRET=<webhook_secret_pluggy>
+LIFE_OS_ADMIN_PASSWORD=<senha_forte_para_acesso>
 DATABASE_URL=
 LIFE_OS_DISABLE_TRACKER=true
 LIFE_OS_ENABLE_WINDOWS_TRACKER=false
@@ -115,6 +116,7 @@ PLUGGY_CLIENT_ID=
 PLUGGY_CLIENT_SECRET=
 PLUGGY_WEBHOOK_SECRET=
 SECRET_KEY=
+LIFE_OS_ADMIN_PASSWORD=
 DATABASE_URL=
 ENVIRONMENT=production
 LIFE_OS_DISABLE_TRACKER=true
@@ -165,6 +167,31 @@ POST /finance/bank/webhook
 ```
 
 Importante: nunca colocar senha do banco ou chaves Pluggy no codigo. Use somente variaveis de ambiente no Render/local.
+
+## Seguranca
+
+O LIFE OS deve rodar como app privado quando usa dados reais.
+
+Controles implementados:
+
+- Login obrigatorio por `LIFE_OS_ADMIN_PASSWORD`.
+- Bloqueio de rotas privadas em producao se a senha nao estiver configurada.
+- Sessao HTTPOnly e SameSite.
+- CSRF em requests `POST`, `PUT`, `PATCH` e `DELETE`.
+- Headers basicos de seguranca.
+- Webhook Pluggy protegido por `PLUGGY_WEBHOOK_SECRET`.
+
+Rotas publicas:
+
+```text
+GET /login
+POST /login
+GET /logout
+GET /healthz
+POST /finance/bank/webhook
+```
+
+Observacao: `/finance/bank/webhook` exige segredo no header ou query string.
 
 ## Inbox inteligente
 

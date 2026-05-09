@@ -25,7 +25,26 @@ versions/v0.8.0
 versions/v0.9.0
 versions/v0.10.0
 versions/v0.11.0
+versions/v0.12.0
 ```
+
+## v0.12.0 - Seguranca para dados reais
+
+Status: implementado, exige configuracao de `LIFE_OS_ADMIN_PASSWORD` no Render.
+
+Principais mudancas:
+
+- Login privado.
+- Sessao segura.
+- CSRF em POST/PUT/PATCH/DELETE.
+- Headers de seguranca.
+- Webhook Pluggy protegido por segredo.
+- Rotas privadas bloqueadas em producao se senha admin estiver ausente.
+
+Observacoes:
+
+- Configure `LIFE_OS_ADMIN_PASSWORD` antes de publicar.
+- Atualize o webhook da Pluggy para usar URL gerada pelo app ou inclua `?secret=<PLUGGY_WEBHOOK_SECRET>`.
 
 ## v0.11.0 - Inbox inteligente
 

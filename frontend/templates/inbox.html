@@ -86,6 +86,8 @@
 
 <script>
 let currentStatus = 'pending';
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+const secureHeaders = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken };
 
 async function loadInbox() {
   const [summaryRes, itemsRes, rulesRes] = await Promise.all([
@@ -166,7 +168,7 @@ function renderRules(rules) {
 async function reviewItem(id, action, payload = {}) {
   await fetch(`/api/inbox/items/${id}/review`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: secureHeaders,
     body: JSON.stringify({ action, ...payload })
   });
   await loadInbox();
@@ -205,7 +207,7 @@ document.getElementById('rule-form').addEventListener('submit', async event => {
   };
   const response = await fetch('/api/inbox/rules', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: secureHeaders,
     body: JSON.stringify(payload)
   });
   const feedback = document.getElementById('rule-feedback');

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
+from config import config
 from backend.database import session_scope
 from backend.services.finance_service import (
     create_goal,
@@ -130,6 +131,8 @@ def finance_bank_status():
 @finance_bp.route("/finance/bank/connect-token", methods=["POST"])
 def finance_bank_connect_token():
     webhook_url = request.url_root.rstrip("/") + "/finance/bank/webhook"
+    if config.PLUGGY_WEBHOOK_SECRET:
+        webhook_url = f"{webhook_url}?secret={config.PLUGGY_WEBHOOK_SECRET}"
     try:
         token = create_connect_token(webhook_url=webhook_url, client_user_id="life-os-owner")
     except PluggyError as exc:
