@@ -300,9 +300,15 @@ def analyze_productivity(raw_text: str, normalized: str, extracted: dict) -> Nlp
     )
 
 
-def save_raw_entry(session, analysis: NlpAnalysis, chat_id: str = "", username: str = "") -> RawEntry:
+def save_raw_entry(
+    session,
+    analysis: NlpAnalysis,
+    chat_id: str = "",
+    username: str = "",
+    source: str = "telegram",
+) -> RawEntry:
     raw_entry = RawEntry(
-        source="telegram",
+        source=source,
         raw_text=analysis.raw_text,
         normalized_text=analysis.normalized_text,
         classification=analysis.classification,
@@ -320,7 +326,7 @@ def save_raw_entry(session, analysis: NlpAnalysis, chat_id: str = "", username: 
     return raw_entry
 
 
-def apply_analysis(session, analysis: NlpAnalysis) -> None:
+def apply_analysis(session, analysis: NlpAnalysis, source: str = "telegram") -> None:
     data = analysis.extracted_data
     entry_type = data.get("entry_type")
 
@@ -331,7 +337,7 @@ def apply_analysis(session, analysis: NlpAnalysis) -> None:
             description=data.get("description", ""),
             transaction_type=data.get("transaction_type", "expense"),
             category=data.get("category"),
-            source="telegram",
+            source=source,
         )
         if data.get("transaction_type") == "expense":
             save_expense(session, data["amount"], data.get("description", ""))

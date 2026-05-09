@@ -33,9 +33,10 @@ def create_mobile_entry(
     recommendation: str = "",
     chat_id: str = "",
     username: str = "",
+    source: str = "telegram",
 ) -> MobileEntry:
     entry = MobileEntry(
-        source="telegram",
+        source=source,
         entry_type=entry_type,
         raw_text=raw_text,
         interpreted_text=interpreted_text,

@@ -72,6 +72,8 @@ O projeto ja possui:
 - SQLAlchemy com SQLite local e suporte preparado para PostgreSQL via `DATABASE_URL`.
 - Rotas separadas por dominio.
 - Dashboard HTML + Tailwind.
+- Dashboard dark premium com entrada inteligente direta no app.
+- Foto pessoal local em `frontend/static/images/profile-beach-gym.jpeg` usada como fundo da tela inicial e avatar.
 - Tracker de atividade Windows.
 - Background tracker junto com Flask.
 - Motor de foco e produtividade.
@@ -80,11 +82,38 @@ O projeto ja possui:
 - Modulo financeiro.
 - Telegram bot.
 - Parser NLP baseado em regex, palavras-chave e heuristicas.
+- API `/api/smart-entry` para registrar linguagem natural pelo dashboard.
+- API `/api/summary` para consolidar foco, missao, financas, tarefas e entradas recentes.
 - Tabela `raw_entries` para nunca perder mensagens.
 - Inbox inteligente para revisar, corrigir e transformar entradas.
 - Deploy Render/Railway com Gunicorn.
 - Scripts de deploy e build local.
 - Snapshots em `versions/`.
+
+## Ambiente Render configurado
+
+O servico `life_os` no Render ja possui variaveis de ambiente cadastradas. Nao salvar valores reais em arquivos do projeto.
+
+Variaveis existentes no Render:
+
+- `ENVIRONMENT`
+- `LIFE_OS_ADMIN_PASSWORD`
+- `LIFE_OS_DISABLE_TRACKER`
+- `LIFE_OS_ENABLE_WINDOWS_TRACKER`
+- `PLUGGY_CLIENT_ID`
+- `PLUGGY_CLIENT_SECRET`
+- `PLUGGY_WEBHOOK_SECRET`
+- `SECRET_KEY`
+- `TELEGRAM_BOT_TOKEN`
+
+Uso esperado:
+
+- `LIFE_OS_ADMIN_PASSWORD`: senha unica para login privado no site.
+- `SECRET_KEY`: segredo de sessao Flask.
+- `PLUGGY_CLIENT_ID` e `PLUGGY_CLIENT_SECRET`: autenticacao API Pluggy.
+- `PLUGGY_WEBHOOK_SECRET`: protecao do webhook Pluggy.
+- `TELEGRAM_BOT_TOKEN`: bot Telegram.
+- `LIFE_OS_DISABLE_TRACKER=true` e `LIFE_OS_ENABLE_WINDOWS_TRACKER=false` em cloud Linux.
 
 ## Funcionalidades prontas
 

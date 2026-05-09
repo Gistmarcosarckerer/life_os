@@ -26,7 +26,41 @@ versions/v0.9.0
 versions/v0.10.0
 versions/v0.11.0
 versions/v0.12.0
+versions/v0.12.1
+versions/v0.13.0
 ```
+
+## v0.13.0 - Dashboard inteligente visual dark
+
+Status: implementado, aguardando publicacao/validacao visual em producao.
+
+Principais mudancas:
+
+- Dashboard principal redesenhado com visual dark premium.
+- Entrada inteligente no dashboard para registrar frases naturais.
+- API `/api/smart-entry` para interpretar, salvar e aplicar entradas.
+- API `/api/summary` para consolidar estado operacional.
+- Foto pessoal usada como fundo da tela inicial e foto de perfil.
+
+Observacoes:
+
+- A foto foi copiada para `frontend/static/images/profile-beach-gym.jpeg`.
+- Publicar via `deploy_lifeos.bat` para o Render rebuildar automaticamente.
+
+## v0.12.1 - Memoria de ambiente Render
+
+Status: documentacao atualizada.
+
+Principais mudancas:
+
+- Registrado que o Render ja tem as variaveis principais configuradas.
+- Valores sensiveis nao foram salvos.
+- `PROJECT_CONTEXT.md` e `AI_STUDIO_CONTEXT.md` atualizados para continuidade futura.
+
+Observacoes:
+
+- Essa versao nao altera codigo de runtime.
+- Usar esta informacao apenas como contexto; nunca versionar segredos.
 
 ## v0.12.0 - Seguranca para dados reais
 

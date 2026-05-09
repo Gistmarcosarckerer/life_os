@@ -3,229 +3,328 @@
 {% block title %}Dashboard principal{% endblock %}
 {% block content %}
 <div class="space-y-6">
-  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-    <div class="metric-card metric-orange">
-      <div class="flex items-start justify-between z-10">
-        <div class="metric-icon">F</div>
-        <span class="badge bg-white bg-opacity-20 text-white" id="finance-risk">Risco {{ finance.risk_level }}</span>
+  <section class="panel p-5 md:p-7 relative overflow-hidden" style="background-image: linear-gradient(90deg, rgba(5,5,5,.94), rgba(5,5,5,.74), rgba(5,5,5,.30)), url('{{ url_for('static', filename='images/profile-beach-gym.jpeg') }}'); background-size: cover; background-position: center 34%;">
+    <div class="absolute inset-0" style="background: radial-gradient(circle at 8% 15%, rgba(124,58,237,.22), transparent 25rem);"></div>
+    <div class="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+      <div class="max-w-2xl">
+        <p class="muted text-sm font-semibold">Entrada inteligente</p>
+        <h3 class="text-2xl md:text-3xl font-black mt-1">Digite qualquer coisa. O LIFE OS classifica, salva e decide o proximo passo.</h3>
       </div>
-      <div class="z-10">
-        <p class="text-orange-100 font-semibold">Saude financeira</p>
-        <p class="text-4xl font-extrabold mt-1" id="finance-health">{{ finance.health_score }}</p>
+      <div class="flex items-center gap-2">
+        <span class="badge" id="last-input">aguardando dados</span>
+        <span class="badge" id="tracker-status">tracker</span>
       </div>
     </div>
+
+    <form id="smart-entry-form" class="relative z-10 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <input id="smart-entry-text" class="field lg:col-span-10" autocomplete="off" placeholder="Ex: gastei 80 mercado, dormi mal, treino peito concluido, tarefa revisar PCP impacto 8 urgencia 7">
+      <button class="btn btn-primary lg:col-span-2" type="submit">Processar</button>
+    </form>
+    <div id="smart-entry-result" class="hidden panel-soft p-4 mt-4 relative z-10"></div>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
     <div class="metric-card metric-indigo">
-      <div class="flex items-start justify-between z-10">
-        <div class="metric-icon">R$</div>
-        <span class="badge bg-white bg-opacity-20 text-white" id="spent-percent">{{ finance.income_spent_percent }}%</span>
+      <div class="relative z-10 flex items-start justify-between">
+        <span class="badge">foco</span>
+        <span class="text-xs font-black text-gray-500" id="focus-state">normal</span>
       </div>
-      <div class="z-10">
-        <p class="text-indigo-100 font-semibold">Gasto do mes</p>
-        <p class="text-3xl font-extrabold mt-1" id="month-spend">R$ {{ "%.2f"|format(finance.total_expenses) }}</p>
+      <div class="relative z-10 mt-8">
+        <p class="muted font-semibold">Focus score</p>
+        <p class="text-5xl font-black mt-1" id="focus-score">{{ focus_score }}</p>
+        <div class="h-2 rounded-full mt-4 overflow-hidden" style="background: rgba(255,255,255,.09);">
+          <div id="focus-bar" class="h-full rounded-full" style="width: {{ focus_score }}%; background: linear-gradient(90deg, #7c3aed, #22d3ee);"></div>
+        </div>
       </div>
     </div>
+
+    <div class="metric-card metric-orange">
+      <div class="relative z-10 flex items-start justify-between">
+        <span class="badge">financeiro</span>
+        <span class="text-xs font-black text-gray-500" id="finance-risk">risco {{ finance.risk_level }}</span>
+      </div>
+      <div class="relative z-10 mt-8">
+        <p class="muted font-semibold">Gasto do mes</p>
+        <p class="text-4xl font-black mt-1" id="month-spend">R$ {{ "%.2f"|format(finance.total_expenses) }}</p>
+        <p class="muted text-sm mt-2" id="spent-percent">{{ finance.income_spent_percent }}% da renda</p>
+      </div>
+    </div>
+
     <div class="metric-card metric-white">
-      <div class="flex items-start justify-between z-10">
-        <div class="metric-icon">S</div>
-        <span class="badge bg-gray-800 text-gray-300" id="daily-limit">Teto R$ {{ "%.2f"|format(finance.recommended_daily_limit) }}</span>
+      <div class="relative z-10 flex items-start justify-between">
+        <span class="badge">saldo</span>
+        <span class="text-xs font-black text-gray-500" id="daily-limit">teto R$ {{ "%.2f"|format(finance.recommended_daily_limit) }}</span>
       </div>
-      <div class="z-10">
+      <div class="relative z-10 mt-8">
         <p class="muted font-semibold">Saldo previsto</p>
-        <p class="text-3xl font-extrabold mt-1" id="projected-balance">R$ {{ "%.2f"|format(finance.projected_balance) }}</p>
+        <p class="text-4xl font-black mt-1" id="projected-balance">R$ {{ "%.2f"|format(finance.projected_balance) }}</p>
+        <p class="muted text-sm mt-2" id="financial-health">saude {{ finance.health_score }}/100</p>
       </div>
     </div>
+
     <div class="metric-card metric-dark">
-      <div class="flex items-start justify-between z-10">
-        <div class="metric-icon">P</div>
-        <span class="badge bg-white bg-opacity-20 text-white" id="state">{{ state }}</span>
+      <div class="relative z-10 flex items-start justify-between">
+        <span class="badge">missao</span>
+        <span class="text-xs font-black text-gray-500">agora</span>
       </div>
-      <div class="z-10">
-        <p class="text-gray-300 font-semibold">Foco atual</p>
-        <p class="text-4xl font-extrabold mt-1" id="focus-score">{{ focus_score }}</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="panel p-8 xl:col-span-2">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="muted text-sm font-semibold">Missao automatica</p>
-          <h3 class="text-3xl font-extrabold tracking-tight mt-1" id="mission">{{ main_task }}</h3>
-        </div>
-        <span class="badge bg-green-400 text-gray-950" id="tracker-status">online</span>
-      </div>
-      <p class="text-gray-300 mt-5 text-lg" id="recommendation">Calculando recomendacao...</p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        <div class="panel-soft p-5">
-          <p class="muted text-sm">Recomendacao financeira</p>
-          <p class="font-semibold mt-2" id="finance-recommendation">{{ finance.recommendation }}</p>
-        </div>
-        <div class="panel-soft p-5">
-          <p class="muted text-sm">Atividade atual</p>
-          <p class="font-semibold mt-2" id="current-app">Aguardando captura</p>
-          <p class="muted text-sm mt-1" id="current-window"></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel p-6">
-      <p class="muted text-sm font-semibold">Alertas inteligentes</p>
-      <div id="finance-alerts" class="space-y-2 mt-4">
-        {% for alert in finance.alerts %}
-        <div class="panel-soft p-3 text-sm">{{ alert }}</div>
-        {% endfor %}
+      <div class="relative z-10 mt-8">
+        <p class="muted font-semibold">Missao atual</p>
+        <p class="text-2xl font-black mt-1 leading-tight" id="mission">{{ main_task }}</p>
       </div>
     </div>
   </section>
 
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="panel p-6 xl:col-span-2">
+  <section class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+    <div class="panel p-6 xl:col-span-7">
       <div class="flex items-center justify-between gap-3">
-        <p class="muted text-sm">Transacoes recentes</p>
-        <a href="/finance" class="text-sm text-green-300 font-semibold">Abrir financeiro</a>
+        <div>
+          <p class="muted text-sm font-semibold">Financas</p>
+          <h3 class="text-2xl font-black mt-1">Fluxo do mes</h3>
+        </div>
+        <a class="btn btn-secondary text-sm" href="/finance">Abrir</a>
       </div>
-      <div id="recent-transactions" class="space-y-2 mt-4"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+        <div class="panel-soft p-4">
+          <p class="muted text-xs font-bold uppercase tracking-wider">Renda</p>
+          <p class="text-2xl font-black mt-2" id="income">R$ 0.00</p>
+        </div>
+        <div class="panel-soft p-4">
+          <p class="muted text-xs font-bold uppercase tracking-wider">Economia estimada</p>
+          <p class="text-2xl font-black mt-2" id="estimated-savings">R$ 0.00</p>
+        </div>
+        <div class="panel-soft p-4">
+          <p class="muted text-xs font-bold uppercase tracking-wider">Media diaria</p>
+          <p class="text-2xl font-black mt-2" id="daily-average">R$ 0.00</p>
+        </div>
+      </div>
+      <div id="category-bars" class="mt-6 space-y-3"></div>
+      <div id="finance-alerts" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6"></div>
     </div>
-    <div class="panel p-6">
-      <p class="muted text-sm">Telegram</p>
-      <p class="font-semibold mt-2" id="telegram-status">verificando</p>
-      <div id="telegram-entries" class="space-y-2 mt-4"></div>
+
+    <div class="panel p-6 xl:col-span-5">
+      <p class="muted text-sm font-semibold">Life AI Insight</p>
+      <h3 class="text-2xl font-black mt-1">Recomendacao operacional</h3>
+      <p class="text-lg text-gray-300 leading-relaxed mt-5" id="recommendation">Calculando...</p>
+      <div class="panel-soft p-4 mt-5">
+        <p class="muted text-xs font-bold uppercase tracking-wider">Atividade atual</p>
+        <p class="font-black mt-2" id="current-app">Aguardando captura</p>
+        <p class="muted text-sm mt-1" id="current-window"></p>
+      </div>
+      <div class="panel-soft p-4 mt-3">
+        <p class="muted text-xs font-bold uppercase tracking-wider">Financeiro do dia</p>
+        <p class="font-semibold mt-2" id="finance-recommendation">{{ finance.recommendation }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+    <div class="panel p-6 xl:col-span-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="muted text-sm font-semibold">Agenda operacional</p>
+          <h3 class="text-xl font-black mt-1">Tarefas ativas</h3>
+        </div>
+        <a href="/productivity" class="badge">ver</a>
+      </div>
+      <div id="active-tasks" class="space-y-3 mt-5"></div>
+    </div>
+
+    <div class="panel p-6 xl:col-span-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="muted text-sm font-semibold">Historico</p>
+          <h3 class="text-xl font-black mt-1">Entradas recentes</h3>
+        </div>
+        <a href="/inbox" class="badge">revisar</a>
+      </div>
+      <div id="recent-entries" class="space-y-3 mt-5"></div>
+    </div>
+
+    <div class="panel p-6 xl:col-span-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="muted text-sm font-semibold">Telegram</p>
+          <h3 class="text-xl font-black mt-1">Debug rapido</h3>
+        </div>
+        <span class="badge" id="telegram-status">verificando</span>
+      </div>
+      <div class="grid grid-cols-1 gap-3 mt-5">
+        <div class="panel-soft p-4">
+          <p class="muted text-xs font-bold uppercase tracking-wider">chat_id</p>
+          <p class="font-mono text-sm mt-2" id="telegram-debug-chat">aguardando</p>
+        </div>
+        <div class="panel-soft p-4">
+          <p class="muted text-xs font-bold uppercase tracking-wider">username</p>
+          <p class="font-mono text-sm mt-2" id="telegram-debug-user">aguardando</p>
+        </div>
+      </div>
+      <div id="telegram-debug-messages" class="space-y-3 mt-4"></div>
     </div>
   </section>
 
   <section class="panel p-6">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
       <div>
-        <p class="muted text-sm">Debug Telegram</p>
-        <h3 class="text-xl font-bold mt-1">Conexao e ultimas mensagens</h3>
+        <p class="muted text-sm font-semibold">Classificacao NLP</p>
+        <h3 class="text-xl font-black mt-1">Interpretadas, pendentes e sugestoes</h3>
       </div>
-      <span class="badge bg-gray-800 text-gray-300">diagnostico</span>
+      <span class="badge">regex + heuristicas</span>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-      <div class="panel-soft p-5">
-        <p class="muted text-sm">chat_id</p>
-        <p class="font-mono text-sm mt-2" id="telegram-debug-chat">aguardando</p>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mt-5">
+      <div>
+        <p class="muted text-sm mb-3">Interpretadas</p>
+        <div id="nlp-interpreted" class="space-y-3"></div>
       </div>
-      <div class="panel-soft p-5">
-        <p class="muted text-sm">username</p>
-        <p class="font-mono text-sm mt-2" id="telegram-debug-user">aguardando</p>
+      <div>
+        <p class="muted text-sm mb-3">Nao classificadas</p>
+        <div id="nlp-unclassified" class="space-y-3"></div>
+      </div>
+      <div>
+        <p class="muted text-sm mb-3">Sugestoes automaticas</p>
+        <div id="nlp-suggestions" class="space-y-3"></div>
       </div>
     </div>
-    <div id="telegram-debug-messages" class="space-y-2 mt-4"></div>
-  </section>
-
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="panel p-6 xl:col-span-2">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <p class="muted text-sm">NLP Telegram/Siri</p>
-          <h3 class="text-xl font-bold mt-1">Entradas interpretadas</h3>
-        </div>
-        <span class="badge bg-green-400 text-gray-950">automatico</span>
-      </div>
-      <div id="nlp-interpreted" class="space-y-2 mt-4"></div>
-    </div>
-    <div class="panel p-6">
-      <p class="muted text-sm">Nao classificadas</p>
-      <div id="nlp-unclassified" class="space-y-2 mt-4"></div>
-    </div>
-  </section>
-
-  <section class="panel p-6">
-    <p class="muted text-sm">Sugestoes automaticas</p>
-    <div id="nlp-suggestions" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4"></div>
   </section>
 </div>
 
 <script>
 const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
 async function refreshDashboard() {
-  const [lifeRes, financeRes, trackerRes, telegramRes, entriesRes, debugRes, rawEntriesRes] = await Promise.all([
-    fetch('/life-status'),
-    fetch('/api/finance/summary'),
+  const [summaryRes, trackerRes, telegramRes, debugRes, rawEntriesRes] = await Promise.all([
+    fetch('/api/summary'),
     fetch('/tracker-status'),
     fetch('/telegram/status'),
-    fetch('/telegram/entries?limit=4'),
-    fetch('/telegram/debug?limit=6'),
+    fetch('/telegram/debug?limit=4'),
     fetch('/telegram/raw-entries?limit=10')
   ]);
-  const life = await lifeRes.json();
-  const financePayload = await financeRes.json();
+  const summary = await summaryRes.json();
   const tracker = await trackerRes.json();
   const telegram = await telegramRes.json();
-  const entries = await entriesRes.json();
   const debug = await debugRes.json();
   const rawEntries = await rawEntriesRes.json();
-  const finance = financePayload.summary;
+  const finance = summary.finance || {};
+  const focus = summary.focus || {};
 
-  document.getElementById('finance-health').innerText = finance.health_score;
-  document.getElementById('finance-risk').innerText = `Risco ${finance.risk_level}`;
-  document.getElementById('month-spend').innerText = money(finance.total_expenses);
-  document.getElementById('spent-percent').innerText = `${finance.income_spent_percent}% da renda`;
-  document.getElementById('projected-balance').innerText = money(finance.projected_balance);
-  document.getElementById('daily-limit').innerText = `Teto diario ${money(finance.recommended_daily_limit)}`;
-  document.getElementById('finance-recommendation').innerText = finance.recommendation;
-  document.getElementById('focus-score').innerText = life.focus_score;
-  document.getElementById('state').innerText = life.estado_atual;
-  document.getElementById('mission').innerText = life.missao_atual ? life.missao_atual.name : 'Nenhuma missao cadastrada';
-  document.getElementById('recommendation').innerText = life.recomendacao;
-  document.getElementById('tracker-status').innerText = tracker.running ? 'tracker ativo' : 'tracker parado';
-  document.getElementById('telegram-status').innerText = telegram.running ? 'Bot ativo' : (telegram.configured ? 'Bot configurado, parado' : 'Token nao configurado');
+  setText('focus-score', focus.score ?? 0);
+  setText('focus-state', focus.state || 'normal');
+  setWidth('focus-bar', focus.score || 0);
+  setText('finance-risk', `risco ${finance.risk_level || 'baixo'}`);
+  setText('month-spend', money(finance.total_expenses));
+  setText('spent-percent', `${finance.income_spent_percent || 0}% da renda`);
+  setText('projected-balance', money(finance.projected_balance));
+  setText('daily-limit', `teto ${money(finance.recommended_daily_limit)}`);
+  setText('financial-health', `saude ${finance.health_score || 0}/100`);
+  setText('income', money(finance.income));
+  setText('estimated-savings', money(finance.estimated_savings));
+  setText('daily-average', money(finance.average_daily_spend));
+  setText('finance-recommendation', finance.recommendation || 'Configure renda e metas para recomendacoes melhores.');
+  setText('mission', summary.mission ? summary.mission.name : 'Nenhuma missao cadastrada');
+  setText('recommendation', focus.recommendation || 'Sem recomendacao no momento.');
+  setText('tracker-status', tracker.running ? 'tracker ativo' : 'tracker parado');
+  setText('telegram-status', telegram.running ? 'ativo' : (telegram.configured ? 'configurado' : 'sem token'));
+  setText('last-input', summary.lastInputAt ? `ultimo input ${formatDate(summary.lastInputAt)}` : 'sem input recente');
 
-  const activity = life.atividade_atual || tracker.current_activity;
-  document.getElementById('current-app').innerText = activity ? `${activity.app_name} | ${activity.category}` : 'Aguardando captura';
-  document.getElementById('current-window').innerText = activity ? (activity.window_title || 'janela sem titulo') : '';
+  const activity = focus.current_activity || tracker.current_activity;
+  setText('current-app', activity ? `${activity.app_name} | ${activity.category}` : 'Aguardando captura');
+  setText('current-window', activity ? (activity.window_title || 'janela sem titulo') : '');
 
+  renderCategoryBars(finance.by_category || []);
   renderAlerts(finance.alerts || []);
-  renderTransactions(financePayload.transactions || []);
-  renderTelegram(entries.entries || []);
+  renderTasks(summary.activeTasks || []);
+  renderRecentEntries(summary.recentEntries || []);
   renderTelegramDebug(debug);
   renderNlpEntries(rawEntries);
 }
 
-function renderAlerts(alerts) {
-  document.getElementById('finance-alerts').innerHTML = alerts.map(alert =>
-    `<div class="panel-soft p-3 text-sm">${escapeHtml(alert)}</div>`
-  ).join('');
-}
+document.getElementById('smart-entry-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const input = document.getElementById('smart-entry-text');
+  const text = input.value.trim();
+  if (!text) return;
+  showSmartResult('Processando entrada...', false);
+  const response = await fetch('/api/smart-entry', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    },
+    body: JSON.stringify({ text })
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    showSmartResult(payload.error || 'Nao foi possivel processar.', true);
+    return;
+  }
+  input.value = '';
+  showSmartResult(`${payload.interpreted_text}<br><span class="muted">${payload.suggestion || ''}</span>`, false);
+  refreshDashboard();
+});
 
-function renderTransactions(transactions) {
-  const html = transactions.length ? transactions.map(item => `
-    <div class="flex items-center justify-between gap-3 panel-soft p-3">
+function renderCategoryBars(categories) {
+  const container = document.getElementById('category-bars');
+  if (!categories.length) {
+    container.innerHTML = '<p class="muted text-sm">Sem categorias de gasto neste mes.</p>';
+    return;
+  }
+  const max = Math.max(...categories.map(item => Number(item.amount || 0)), 1);
+  container.innerHTML = categories.slice(0, 6).map(item => {
+    const width = Math.max(4, Number(item.amount || 0) / max * 100);
+    return `
       <div>
-        <p class="font-semibold">${escapeHtml(item.description || item.category)}</p>
-        <p class="muted text-xs">${escapeHtml(item.category)} | ${escapeHtml(item.source)}</p>
+        <div class="flex items-center justify-between text-sm mb-2">
+          <span class="font-bold">${escapeHtml(item.category)}</span>
+          <span class="muted">${money(item.amount)}</span>
+        </div>
+        <div class="h-2 rounded-full overflow-hidden" style="background: rgba(255,255,255,.08);">
+          <div class="h-full rounded-full" style="width:${width}%; background: linear-gradient(90deg, #7c3aed, #22d3ee);"></div>
+        </div>
       </div>
-      <p class="font-bold ${item.transaction_type === 'income' ? 'text-green-300' : 'text-red-300'}">${item.transaction_type === 'income' ? '+' : '-'} ${money(item.amount)}</p>
-    </div>
-  `).join('') : '<p class="muted text-sm">Sem transacoes ainda.</p>';
-  document.getElementById('recent-transactions').innerHTML = html;
+    `;
+  }).join('');
 }
 
-function renderTelegram(entries) {
-  document.getElementById('telegram-entries').innerHTML = entries.length ? entries.map(entry => `
-    <div class="panel-soft p-3">
-      <p class="text-sm font-semibold">${escapeHtml(entry.interpreted_text)}</p>
-      <p class="muted text-xs mt-1">${escapeHtml(entry.entry_type)}</p>
+function renderAlerts(alerts) {
+  document.getElementById('finance-alerts').innerHTML = alerts.length ? alerts.map(alert =>
+    `<div class="panel-soft p-4 text-sm leading-relaxed">${escapeHtml(alert)}</div>`
+  ).join('') : '<p class="muted text-sm">Sem alertas financeiros.</p>';
+}
+
+function renderTasks(tasks) {
+  document.getElementById('active-tasks').innerHTML = tasks.length ? tasks.map(task => `
+    <div class="panel-soft p-4">
+      <div class="flex items-center justify-between gap-3">
+        <p class="font-bold">${escapeHtml(task.name)}</p>
+        <span class="badge">${escapeHtml(task.status)}</span>
+      </div>
+      <p class="muted text-xs mt-2">impacto ${task.impact} | urgencia ${task.urgency} | energia ${task.energy_required}</p>
     </div>
-  `).join('') : '<p class="muted text-sm">Sem registros.</p>';
+  `).join('') : '<p class="muted text-sm">Nenhuma tarefa ativa.</p>';
+}
+
+function renderRecentEntries(entries) {
+  document.getElementById('recent-entries').innerHTML = entries.length ? entries.slice(0, 5).map(entry => `
+    <div class="panel-soft p-4">
+      <div class="flex items-center justify-between gap-3">
+        <p class="font-bold text-sm">${escapeHtml(entry.classification)}</p>
+        <span class="badge">${escapeHtml(entry.source)}</span>
+      </div>
+      <p class="text-sm text-gray-300 mt-2">${escapeHtml(entry.interpreted_text || entry.raw_text)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Sem entradas recentes.</p>';
 }
 
 function renderTelegramDebug(debug) {
-  document.getElementById('telegram-debug-chat').innerText = debug.chat_id || 'nenhuma mensagem';
-  document.getElementById('telegram-debug-user').innerText = debug.username || 'nenhum usuario';
+  setText('telegram-debug-chat', debug.chat_id || 'nenhuma mensagem');
+  setText('telegram-debug-user', debug.username || 'nenhum usuario');
   const messages = debug.messages || [];
-  document.getElementById('telegram-debug-messages').innerHTML = messages.length ? messages.map(item => `
+  document.getElementById('telegram-debug-messages').innerHTML = messages.length ? messages.slice(0, 3).map(item => `
     <div class="panel-soft p-3">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <p class="text-sm font-semibold">${escapeHtml(item.raw_text)}</p>
-        <p class="muted text-xs">${escapeHtml(item.username || 'sem username')} | ${escapeHtml(item.chat_id || 'sem chat')}</p>
-      </div>
+      <p class="text-sm font-semibold">${escapeHtml(item.raw_text)}</p>
       <p class="muted text-xs mt-1">${escapeHtml(item.interpreted_text)}</p>
     </div>
-  `).join('') : '<p class="muted text-sm">Nenhuma mensagem recebida pelo Telegram ainda.</p>';
+  `).join('') : '<p class="muted text-sm">Sem mensagens.</p>';
 }
 
 function renderNlpEntries(payload) {
@@ -233,26 +332,48 @@ function renderNlpEntries(payload) {
   const unclassified = payload.unclassified || [];
   const suggestions = payload.suggestions || [];
 
-  document.getElementById('nlp-interpreted').innerHTML = interpreted.length ? interpreted.map(item => `
-    <div class="panel-soft p-3">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <p class="text-sm font-semibold">${escapeHtml(item.interpreted_text)}</p>
-        <span class="badge bg-gray-800 text-gray-300">${escapeHtml(item.classification)} ${Math.round(Number(item.confidence || 0) * 100)}%</span>
-      </div>
-      <p class="muted text-xs mt-1">${escapeHtml(item.raw_text)}</p>
+  document.getElementById('nlp-interpreted').innerHTML = interpreted.length ? interpreted.slice(0, 5).map(item => `
+    <div class="panel-soft p-4">
+      <p class="font-bold text-sm">${escapeHtml(item.interpreted_text)}</p>
+      <p class="muted text-xs mt-2">${escapeHtml(item.classification)} | ${Math.round(Number(item.confidence || 0) * 100)}%</p>
     </div>
-  `).join('') : '<p class="muted text-sm">Nenhuma entrada interpretada ainda.</p>';
+  `).join('') : '<p class="muted text-sm">Nada interpretado ainda.</p>';
 
-  document.getElementById('nlp-unclassified').innerHTML = unclassified.length ? unclassified.map(item => `
-    <div class="panel-soft p-3">
-      <p class="text-sm font-semibold">${escapeHtml(item.raw_text)}</p>
-      <p class="muted text-xs mt-1">${escapeHtml(item.suggestion || 'aguardando revisao')}</p>
+  document.getElementById('nlp-unclassified').innerHTML = unclassified.length ? unclassified.slice(0, 5).map(item => `
+    <div class="panel-soft p-4">
+      <p class="font-bold text-sm">${escapeHtml(item.raw_text)}</p>
+      <p class="muted text-xs mt-2">${escapeHtml(item.suggestion || 'aguardando revisao')}</p>
     </div>
-  `).join('') : '<p class="muted text-sm">Sem entradas pendentes.</p>';
+  `).join('') : '<p class="muted text-sm">Sem pendencias.</p>';
 
-  document.getElementById('nlp-suggestions').innerHTML = suggestions.length ? suggestions.map(item => `
-    <div class="panel-soft p-3 text-sm">${escapeHtml(item)}</div>
-  `).join('') : '<p class="muted text-sm">As sugestoes aparecem conforme novas mensagens chegam.</p>';
+  document.getElementById('nlp-suggestions').innerHTML = suggestions.length ? suggestions.slice(0, 5).map(item => `
+    <div class="panel-soft p-4 text-sm leading-relaxed">${escapeHtml(item)}</div>
+  `).join('') : '<p class="muted text-sm">Sugestoes aparecem conforme novos dados entram.</p>';
+}
+
+function showSmartResult(message, isError) {
+  const result = document.getElementById('smart-entry-result');
+  result.classList.remove('hidden');
+  result.style.borderColor = isError ? 'rgba(251, 113, 133, .35)' : 'rgba(52, 211, 153, .28)';
+  result.innerHTML = `<p class="${isError ? 'text-red-300' : 'text-green-300'} font-bold">${message}</p>`;
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.innerText = value;
+}
+
+function setWidth(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.style.width = `${Math.max(0, Math.min(Number(value || 0), 100))}%`;
+}
+
+function formatDate(value) {
+  try {
+    return new Date(value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return 'recente';
+  }
 }
 
 function escapeHtml(value) {

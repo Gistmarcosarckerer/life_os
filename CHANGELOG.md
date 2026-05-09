@@ -4,6 +4,48 @@ Todas as mudancas relevantes do LIFE OS devem ser documentadas neste arquivo.
 
 Formato inspirado em Keep a Changelog.
 
+## v0.13.0 - Dashboard inteligente visual dark
+
+### Added
+
+- Entrada inteligente no dashboard via `/api/smart-entry`.
+- API `/api/summary` para consolidar foco, missao, financas, tarefas e entradas NLP.
+- Foto pessoal como fundo da tela inicial e avatar do app.
+- Asset local `frontend/static/images/profile-beach-gym.jpeg`.
+
+### Changed
+
+- Dashboard principal redesenhado em estilo dark premium inspirado no modelo anexado.
+- `base.html` agora usa layout dark com sidebar, avatar e identidade visual mais forte.
+- NLP pode salvar entradas com origem `dashboard`, sem depender apenas de Telegram.
+
+### Fixed
+
+- Dashboard passa a registrar entradas naturais diretamente pelo app sem perder mensagens.
+
+### Removed
+
+- Nada removido.
+
+## v0.12.1 - Memoria de ambiente Render
+
+### Added
+
+- Registro em `PROJECT_CONTEXT.md` de que o Render ja possui variaveis de ambiente configuradas.
+- Registro em `AI_STUDIO_CONTEXT.md` das chaves existentes no Render, sem valores sensiveis.
+
+### Changed
+
+- Contexto do projeto passa a orientar futuras IAs a nao solicitar valores reais em arquivos/codigo.
+
+### Fixed
+
+- Reduzido risco de expor segredos novamente durante proximas integracoes.
+
+### Removed
+
+- Nada removido.
+
 ## v0.12.0 - Seguranca para dados reais
 
 ### Added

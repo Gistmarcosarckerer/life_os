@@ -265,6 +265,26 @@ LIFE_OS_DISABLE_TRACKER=true
 LIFE_OS_ENABLE_WINDOWS_TRACKER=false
 ```
 
+## Render ja configurado
+
+O servico `life_os` no Render ja tem variaveis cadastradas. Nao pedir ao usuario para colar valores reais em arquivos ou no codigo.
+
+Chaves presentes:
+
+```text
+ENVIRONMENT
+LIFE_OS_ADMIN_PASSWORD
+LIFE_OS_DISABLE_TRACKER
+LIFE_OS_ENABLE_WINDOWS_TRACKER
+PLUGGY_CLIENT_ID
+PLUGGY_CLIENT_SECRET
+PLUGGY_WEBHOOK_SECRET
+SECRET_KEY
+TELEGRAM_BOT_TOKEN
+```
+
+`LIFE_OS_ADMIN_PASSWORD` e a senha do login privado. `PLUGGY_WEBHOOK_SECRET` protege webhook e nao e senha de login.
+
 ## UX
 
 Estilo desejado:
