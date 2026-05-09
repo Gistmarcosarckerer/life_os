@@ -34,6 +34,7 @@ Inputs podem vir do Windows, dashboard, Telegram ou Siri/iPhone. O backend inter
 - Entrada por Siri/iPhone usando atalho que envia mensagem ao bot do Telegram.
 - Parser NLP simples para linguagem natural.
 - Modulo financeiro com transacoes, renda, metas, resumo mensal e analise de compra.
+- Integracao Pluggy/Open Finance para importar contas e transacoes bancarias.
 - Dashboard premium em HTML + Tailwind CDN.
 - Deploy preparado para Render/Railway com Gunicorn.
 
@@ -93,6 +94,9 @@ Variaveis no Render:
 ENVIRONMENT=production
 SECRET_KEY=<valor_seguro>
 TELEGRAM_BOT_TOKEN=<token_do_bot>
+PLUGGY_CLIENT_ID=<client_id_pluggy>
+PLUGGY_CLIENT_SECRET=<client_secret_pluggy>
+PLUGGY_WEBHOOK_SECRET=<webhook_secret_pluggy>
 DATABASE_URL=
 LIFE_OS_DISABLE_TRACKER=true
 LIFE_OS_ENABLE_WINDOWS_TRACKER=false
@@ -106,6 +110,9 @@ Exemplo em `.env.example`:
 
 ```text
 TELEGRAM_BOT_TOKEN=
+PLUGGY_CLIENT_ID=
+PLUGGY_CLIENT_SECRET=
+PLUGGY_WEBHOOK_SECRET=
 SECRET_KEY=
 DATABASE_URL=
 ENVIRONMENT=production
@@ -135,6 +142,28 @@ treino peito concluido
 ```
 
 Toda mensagem e salva. Quando o NLP nao entende totalmente, o texto entra em `raw_entries` com status `raw_input`.
+
+## Integracao bancaria Pluggy/Open Finance
+
+O LIFE OS integra com Pluggy para conectar bancos via Open Finance sem armazenar senha bancaria.
+
+Fluxo:
+
+```text
+Financeiro -> Conectar banco -> Pluggy Connect Widget -> autorizacao C6 -> itemId -> sync accounts/transactions -> transactions
+```
+
+Endpoints:
+
+```text
+GET /finance/bank/status
+POST /finance/bank/connect-token
+POST /finance/bank/items
+POST /finance/bank/sync
+POST /finance/bank/webhook
+```
+
+Importante: nunca colocar senha do banco ou chaves Pluggy no codigo. Use somente variaveis de ambiente no Render/local.
 
 ## Integracao Siri/iPhone
 
@@ -225,6 +254,11 @@ POST /finance/purchase-check
 GET /finance/goals
 POST /finance/goals
 GET /api/finance/summary
+GET /finance/bank/status
+POST /finance/bank/connect-token
+POST /finance/bank/items
+POST /finance/bank/sync
+POST /finance/bank/webhook
 GET /telegram/status
 GET /telegram/entries
 GET /telegram/debug

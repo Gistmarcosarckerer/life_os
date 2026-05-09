@@ -48,6 +48,27 @@
 
   <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
     <div class="panel p-5 xl:col-span-2">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="muted text-sm">Open Finance</p>
+          <h3 class="font-bold text-xl mt-1">Conectar banco via Pluggy</h3>
+          <p class="muted text-sm mt-2">Autorize o C6 pelo widget oficial. O LIFE OS importa saldo e transacoes sem armazenar senha do banco.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button class="btn btn-primary" type="button" id="connect-bank">Conectar banco</button>
+          <button class="btn btn-secondary" type="button" id="sync-bank">Sincronizar</button>
+        </div>
+      </div>
+      <div id="bank-status" class="panel-soft p-3 text-sm mt-4">Verificando Pluggy...</div>
+    </div>
+    <div class="panel p-5">
+      <h3 class="font-bold text-lg">Contas conectadas</h3>
+      <div id="bank-accounts" class="space-y-2 mt-4"></div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="panel p-5 xl:col-span-2">
       <h3 class="font-bold text-lg">Transacoes recentes</h3>
       <div id="transactions" class="space-y-2 mt-4"></div>
     </div>
@@ -59,6 +80,7 @@
   </section>
 </div>
 
+<script src="https://cdn.pluggy.ai/pluggy-connect/latest/pluggy-connect.js"></script>
 <script>
 const money = value => `R$ ${Number(value || 0).toFixed(2)}`;
 
@@ -79,6 +101,7 @@ async function loadFinance() {
   renderTransactions(data.transactions || []);
   renderAlerts(summary.alerts || []);
   renderCategories(summary.by_category || []);
+  renderBankStatus(data.pluggy || {}, data.bank_accounts || []);
 }
 
 function renderTransactions(items) {
@@ -96,6 +119,74 @@ function renderAlerts(items) {
 function renderCategories(items) {
   document.getElementById('categories').innerHTML = items.map(item => `<div class="flex justify-between text-sm"><span>${escapeHtml(item.category)}</span><span>${money(item.amount)}</span></div>`).join('');
 }
+
+function renderBankStatus(pluggy, accounts) {
+  const statusBox = document.getElementById('bank-status');
+  const configured = pluggy.configured;
+  const count = pluggy.connections_count || 0;
+  statusBox.innerHTML = configured
+    ? `<strong>Pluggy configurado.</strong> ${count} conexao(oes) cadastrada(s).`
+    : '<strong>Pluggy nao configurado.</strong> Configure PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET no Render.';
+
+  document.getElementById('bank-accounts').innerHTML = accounts.length ? accounts.map(account => `
+    <div class="panel-soft p-3">
+      <p class="font-semibold">${escapeHtml(account.name)}</p>
+      <p class="muted text-xs mt-1">${escapeHtml(account.account_type)} | ${escapeHtml(account.subtype)}</p>
+      <p class="font-bold mt-2">${money(account.balance)}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Nenhuma conta conectada.</p>';
+}
+
+document.getElementById('connect-bank').addEventListener('click', async () => {
+  const statusBox = document.getElementById('bank-status');
+  statusBox.innerText = 'Gerando token seguro da Pluggy...';
+  const tokenResponse = await fetch('/finance/bank/connect-token', { method: 'POST' });
+  const tokenData = await tokenResponse.json();
+  if (!tokenResponse.ok) {
+    statusBox.innerText = tokenData.error || 'Erro ao criar token Pluggy.';
+    return;
+  }
+  if (!window.PluggyConnect) {
+    statusBox.innerText = 'SDK da Pluggy nao carregou. Recarregue a pagina.';
+    return;
+  }
+  const pluggyConnect = new PluggyConnect({
+    connectToken: tokenData.accessToken,
+    includeSandbox: false,
+    onSuccess: async itemData => {
+      statusBox.innerText = 'Banco conectado. Importando transacoes...';
+      const response = await fetch('/finance/bank/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        statusBox.innerText = result.error || 'Conexao criada, mas a importacao falhou.';
+        return;
+      }
+      statusBox.innerText = `Importacao concluida: ${result.sync.imported_transactions || 0} transacoes novas.`;
+      await loadFinance();
+    },
+    onError: error => {
+      statusBox.innerText = `Erro Pluggy: ${error.message || 'conexao cancelada'}`;
+    }
+  });
+  pluggyConnect.init();
+});
+
+document.getElementById('sync-bank').addEventListener('click', async () => {
+  const statusBox = document.getElementById('bank-status');
+  statusBox.innerText = 'Sincronizando bancos conectados...';
+  const response = await fetch('/finance/bank/sync', { method: 'POST' });
+  const result = await response.json();
+  if (!response.ok) {
+    statusBox.innerText = result.error || 'Falha ao sincronizar.';
+    return;
+  }
+  statusBox.innerText = `Sincronizacao concluida: ${result.sync.imported_transactions || 0} transacoes novas.`;
+  await loadFinance();
+});
 
 document.getElementById('profile-form').addEventListener('submit', async event => {
   event.preventDefault();

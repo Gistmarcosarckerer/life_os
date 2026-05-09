@@ -142,6 +142,50 @@ class Transaction(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class BankConnection(Base):
+    __tablename__ = "bank_connections"
+
+    id = Column(Integer, primary_key=True)
+    provider = Column(String, nullable=False, default="pluggy")
+    item_id = Column(String, nullable=False, unique=True)
+    connector_id = Column(String, nullable=False, default="")
+    institution_name = Column(String, nullable=False, default="")
+    status = Column(String, nullable=False, default="created")
+    execution_status = Column(String, nullable=False, default="")
+    last_sync_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class BankAccount(Base):
+    __tablename__ = "bank_accounts"
+
+    id = Column(Integer, primary_key=True)
+    provider = Column(String, nullable=False, default="pluggy")
+    pluggy_account_id = Column(String, nullable=False, unique=True)
+    item_id = Column(String, nullable=False)
+    account_type = Column(String, nullable=False, default="")
+    subtype = Column(String, nullable=False, default="")
+    name = Column(String, nullable=False, default="")
+    balance = Column(Float, nullable=False, default=0)
+    currency_code = Column(String, nullable=False, default="BRL")
+    last_sync_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class ImportedTransaction(Base):
+    __tablename__ = "imported_transactions"
+
+    id = Column(Integer, primary_key=True)
+    provider = Column(String, nullable=False, default="pluggy")
+    external_id = Column(String, nullable=False, unique=True)
+    account_id = Column(String, nullable=False, default="")
+    transaction_id = Column(Integer, nullable=True)
+    raw_payload = Column(Text, nullable=False, default="{}")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class FinancialGoal(Base):
     __tablename__ = "financial_goals"
 

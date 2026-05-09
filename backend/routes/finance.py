@@ -13,6 +13,15 @@ from backend.services.finance_service import (
     serialize_transaction,
     update_financial_profile,
 )
+from backend.services.pluggy_service import (
+    PluggyError,
+    create_connect_token,
+    get_pluggy_status,
+    list_bank_accounts,
+    register_item,
+    sync_all_connections,
+    sync_connection,
+)
 
 finance_bp = Blueprint("finance", __name__)
 
@@ -97,10 +106,72 @@ def api_finance_summary():
         summary = get_financial_summary(session)
         transactions = list_transactions(session, limit=8)
         goals = list_goals(session)
+        pluggy = get_pluggy_status(session)
+        bank_accounts = list_bank_accounts(session)
     return jsonify(
         {
             "summary": summary,
             "transactions": transactions,
             "goals": goals,
+            "pluggy": pluggy,
+            "bank_accounts": bank_accounts,
         }
     )
+
+
+@finance_bp.route("/finance/bank/status")
+def finance_bank_status():
+    with session_scope() as session:
+        status = get_pluggy_status(session)
+        accounts = list_bank_accounts(session)
+    return jsonify({"pluggy": status, "bank_accounts": accounts})
+
+
+@finance_bp.route("/finance/bank/connect-token", methods=["POST"])
+def finance_bank_connect_token():
+    webhook_url = request.url_root.rstrip("/") + "/finance/bank/webhook"
+    try:
+        token = create_connect_token(webhook_url=webhook_url, client_user_id="life-os-owner")
+    except PluggyError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify(token)
+
+
+@finance_bp.route("/finance/bank/items", methods=["POST"])
+def finance_bank_items():
+    payload = request.get_json(silent=True) or {}
+    try:
+        with session_scope() as session:
+            connection = register_item(session, payload)
+            result = sync_connection(session, connection.item_id)
+            status = get_pluggy_status(session)
+            accounts = list_bank_accounts(session)
+    except PluggyError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"connection": status, "bank_accounts": accounts, "sync": result}), 201
+
+
+@finance_bp.route("/finance/bank/sync", methods=["POST"])
+def finance_bank_sync():
+    try:
+        with session_scope() as session:
+            result = sync_all_connections(session)
+            status = get_pluggy_status(session)
+            accounts = list_bank_accounts(session)
+    except PluggyError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"sync": result, "pluggy": status, "bank_accounts": accounts})
+
+
+@finance_bp.route("/finance/bank/webhook", methods=["POST"])
+def finance_bank_webhook():
+    payload = request.get_json(silent=True) or {}
+    item_id = payload.get("itemId")
+    if not item_id:
+        return jsonify({"status": "ignored", "reason": "itemId ausente"}), 200
+    try:
+        with session_scope() as session:
+            result = sync_connection(session, item_id)
+    except PluggyError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 400
+    return jsonify({"status": "ok", "sync": result})

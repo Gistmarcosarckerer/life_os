@@ -17,6 +17,10 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "life-os-dev-secret")
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    PLUGGY_CLIENT_ID = os.getenv("PLUGGY_CLIENT_ID", "").strip()
+    PLUGGY_CLIENT_SECRET = os.getenv("PLUGGY_CLIENT_SECRET", "").strip()
+    PLUGGY_WEBHOOK_SECRET = os.getenv("PLUGGY_WEBHOOK_SECRET", "").strip()
+    PLUGGY_API_BASE_URL = os.getenv("PLUGGY_API_BASE_URL", "https://api.pluggy.ai").rstrip("/")
     PORT = int(os.getenv("PORT", "5000"))
     LIFE_OS_SAMPLE_SECONDS = int(os.getenv("LIFE_OS_SAMPLE_SECONDS", "5"))
     LIFE_OS_DISABLE_TRACKER = os.getenv("LIFE_OS_DISABLE_TRACKER", "").lower() in {

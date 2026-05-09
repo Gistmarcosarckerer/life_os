@@ -4,6 +4,30 @@ Todas as mudancas relevantes do LIFE OS devem ser documentadas neste arquivo.
 
 Formato inspirado em Keep a Changelog.
 
+## v0.10.0 - Integracao Pluggy/Open Finance
+
+### Added
+
+- Configuracao `PLUGGY_CLIENT_ID`, `PLUGGY_CLIENT_SECRET`, `PLUGGY_WEBHOOK_SECRET`.
+- Modelos `BankConnection`, `BankAccount` e `ImportedTransaction`.
+- Servico `backend/services/pluggy_service.py`.
+- Endpoints para gerar Connect Token, registrar item, sincronizar bancos e receber webhook.
+- Interface em `/finance` para conectar banco via Pluggy Connect Widget.
+- Importacao de transacoes Pluggy para `transactions` do LIFE OS.
+
+### Changed
+
+- `/api/finance/summary` agora inclui status Pluggy e contas bancarias conectadas.
+- `requirements.txt` inclui `requests`.
+
+### Fixed
+
+- Dedupe de transacoes importadas via tabela `imported_transactions`.
+
+### Removed
+
+- Nada removido.
+
 ## v0.9.0 - Interface inspirada no modelo Centric
 
 ### Added

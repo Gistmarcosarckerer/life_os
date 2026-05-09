@@ -23,7 +23,26 @@ versions/v0.6.0
 versions/v0.7.0
 versions/v0.8.0
 versions/v0.9.0
+versions/v0.10.0
 ```
+
+## v0.10.0 - Integracao Pluggy/Open Finance
+
+Status: implementado, requer credenciais Pluggy configuradas e validacao com consentimento real.
+
+Principais mudancas:
+
+- `pluggy_service.py` criado.
+- Tabelas `bank_connections`, `bank_accounts` e `imported_transactions`.
+- Financeiro ganhou botoes para conectar banco e sincronizar transacoes.
+- Pluggy Connect Widget integrado via CDN.
+- Transacoes importadas entram na tabela `transactions` com `source="pluggy"`.
+
+Observacoes:
+
+- As credenciais devem ficar somente em variaveis de ambiente.
+- Como as chaves foram expostas em chat, devem ser rotacionadas no painel da Pluggy antes de uso real.
+- Validar em producao se o plano Pluggy permite conectores Open Finance para C6.
 
 ## v0.9.0 - Interface inspirada no modelo Centric
 
