@@ -33,6 +33,7 @@ Inputs podem vir do Windows, dashboard, Telegram ou Siri/iPhone. O backend inter
 - Integracao Telegram via `python-telegram-bot`.
 - Entrada por Siri/iPhone usando atalho que envia mensagem ao bot do Telegram.
 - Parser NLP simples para linguagem natural.
+- Inbox inteligente para revisar, corrigir e transformar entradas recebidas.
 - Modulo financeiro com transacoes, renda, metas, resumo mensal e analise de compra.
 - Integracao Pluggy/Open Finance para importar contas e transacoes bancarias.
 - Dashboard premium em HTML + Tailwind CDN.
@@ -165,6 +166,35 @@ POST /finance/bank/webhook
 
 Importante: nunca colocar senha do banco ou chaves Pluggy no codigo. Use somente variaveis de ambiente no Render/local.
 
+## Inbox inteligente
+
+A Inbox operacional centraliza entradas vindas de Telegram, Siri e NLP.
+
+Ela permite:
+
+- Revisar entradas pendentes.
+- Confirmar interpretacoes corretas.
+- Ignorar ruido.
+- Transformar entrada em transacao.
+- Transformar entrada em tarefa.
+- Criar regras pessoais para reduzir revisao manual.
+
+Rota:
+
+```text
+GET /inbox
+```
+
+APIs:
+
+```text
+GET /api/inbox/summary
+GET /api/inbox/items
+POST /api/inbox/items/<id>/review
+GET /api/inbox/rules
+POST /api/inbox/rules
+```
+
 ## Integracao Siri/iPhone
 
 O caminho atual recomendado e:
@@ -239,6 +269,12 @@ GET /life-status
 GET /tracker-status
 GET /state
 POST /track
+GET /inbox
+GET /api/inbox/summary
+GET /api/inbox/items
+POST /api/inbox/items/<id>/review
+GET /api/inbox/rules
+POST /api/inbox/rules
 GET /tasks
 POST /tasks
 GET /tasks/<id>

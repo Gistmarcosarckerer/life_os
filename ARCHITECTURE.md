@@ -103,6 +103,7 @@ Camada de regra de negocio:
 - `telegram_bot.py`: ciclo de vida do bot e recebimento de mensagens.
 - `mobile_entry_service.py`: registros moveis e debug Telegram.
 - `nlp_service.py`: classificacao e extracao de linguagem natural.
+- `inbox_service.py`: revisao de entradas, correcoes, tarefas/transacoes e regras pessoais.
 
 ### `backend/routes`
 
@@ -274,6 +275,17 @@ GET /telegram/debug
 GET /telegram/raw-entries
 ```
 
+### Inbox
+
+```text
+GET /inbox
+GET /api/inbox/summary
+GET /api/inbox/items
+POST /api/inbox/items/<id>/review
+GET /api/inbox/rules
+POST /api/inbox/rules
+```
+
 ## Banco de dados
 
 ### Local
@@ -336,6 +348,41 @@ Responsabilidades:
 - Gerar resposta para Telegram.
 
 Essa camada foi separada para permitir troca futura por IA sem reescrever Telegram, rotas ou financeiro.
+
+## Inbox layer
+
+Arquivo principal:
+
+```text
+backend/services/inbox_service.py
+```
+
+Fluxo:
+
+```text
+raw_entries
+  |
+  v
+/inbox
+  |
+  +--> confirmar interpretacao
+  +--> ignorar ruido
+  +--> criar transacao
+  +--> criar tarefa
+  +--> criar regra pessoal
+```
+
+Campos de revisao em `RawEntry`:
+
+- `review_status`
+- `review_decision`
+- `reviewed_at`
+
+Tabela de regras:
+
+- `personal_rules`
+
+Objetivo: criar memoria operacional limpa antes de automatizar mais decisoes.
 
 ## Decisoes de separacao
 

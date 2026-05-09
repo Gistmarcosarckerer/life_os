@@ -81,6 +81,7 @@ O projeto ja possui:
 - Telegram bot.
 - Parser NLP baseado em regex, palavras-chave e heuristicas.
 - Tabela `raw_entries` para nunca perder mensagens.
+- Inbox inteligente para revisar, corrigir e transformar entradas.
 - Deploy Render/Railway com Gunicorn.
 - Scripts de deploy e build local.
 - Snapshots em `versions/`.
@@ -120,6 +121,14 @@ O projeto ja possui:
 - Backend interpreta e salva.
 - Dashboard mostra ultimos registros, debug e NLP.
 
+### Inbox inteligente
+
+- Usa `raw_entries` como fonte operacional.
+- Cada entrada possui `review_status`, `review_decision` e `reviewed_at`.
+- Permite confirmar, ignorar, marcar como nota, criar transacao, criar tarefa e criar regra pessoal.
+- Regras pessoais ficam em `personal_rules`.
+- Objetivo: transformar entradas soltas em memoria operacional limpa.
+
 ### NLP
 
 Classifica mensagens em:
@@ -143,7 +152,7 @@ Extrai:
 
 ## Funcionalidades em desenvolvimento
 
-- Revisao manual de `raw_entries`.
+- Aplicacao automatica das `personal_rules` no parser NLP.
 - Integracao real com calendario.
 - Persistencia PostgreSQL em producao.
 - Autenticacao.
@@ -233,7 +242,7 @@ O dashboard principal deve priorizar:
 
 1. Persistencia real em PostgreSQL.
 2. Autenticacao simples.
-3. Tela para revisar e transformar `raw_entries`.
+3. Aplicar regras pessoais automaticamente nas proximas mensagens.
 4. IA externa opcional para NLP.
 5. Modulo agenda com calendario.
 6. Modulo treino com plano, carga e historico.

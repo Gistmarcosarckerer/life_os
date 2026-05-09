@@ -134,6 +134,7 @@
       </div>
       <nav class="grid gap-2 text-sm">
         <a class="nav-item {% if request.path == '/' %}nav-active{% endif %}" href="/"><span class="nav-icon">D</span>Dashboard</a>
+        <a class="nav-item {% if request.path == '/inbox' %}nav-active{% endif %}" href="/inbox"><span class="nav-icon">I</span>Inbox</a>
         <a class="nav-item {% if request.path.startswith('/finance') %}nav-active{% endif %}" href="/finance"><span class="nav-icon">F</span>Financeiro</a>
         <a class="nav-item {% if request.path == '/productivity' %}nav-active{% endif %}" href="/productivity"><span class="nav-icon">P</span>Produtividade</a>
         <a class="nav-item {% if request.path == '/gym' %}nav-active{% endif %}" href="/gym"><span class="nav-icon">G</span>Gym</a>

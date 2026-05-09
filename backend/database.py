@@ -42,6 +42,16 @@ def apply_lightweight_migrations():
             if "username" not in columns:
                 connection.execute(text("ALTER TABLE mobile_entries ADD COLUMN username VARCHAR DEFAULT '' NOT NULL"))
 
+    if "raw_entries" in inspector.get_table_names():
+        columns = {column["name"] for column in inspector.get_columns("raw_entries")}
+        with engine.begin() as connection:
+            if "review_status" not in columns:
+                connection.execute(text("ALTER TABLE raw_entries ADD COLUMN review_status VARCHAR DEFAULT 'pending' NOT NULL"))
+            if "review_decision" not in columns:
+                connection.execute(text("ALTER TABLE raw_entries ADD COLUMN review_decision VARCHAR DEFAULT '' NOT NULL"))
+            if "reviewed_at" not in columns:
+                connection.execute(text("ALTER TABLE raw_entries ADD COLUMN reviewed_at DATETIME"))
+
 
 @contextmanager
 def session_scope():

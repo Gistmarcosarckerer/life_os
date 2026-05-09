@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block eyebrow %}Revisao inteligente{% endblock %}
+{% block title %}Inbox operacional{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="metric-card metric-indigo">
+      <div class="flex items-start justify-between z-10">
+        <div class="metric-icon">I</div>
+        <span class="badge bg-white bg-opacity-20 text-white">pendentes</span>
+      </div>
+      <div class="z-10">
+        <p class="text-indigo-100 font-semibold">Entradas a revisar</p>
+        <p class="text-4xl font-extrabold mt-1" id="pending-count">0</p>
+      </div>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Revisadas</p>
+      <p class="text-4xl font-extrabold mt-2" id="reviewed-count">0</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Ignoradas</p>
+      <p class="text-4xl font-extrabold mt-2" id="ignored-count">0</p>
+    </div>
+    <div class="panel p-5">
+      <p class="muted text-sm">Regras ativas</p>
+      <p class="text-4xl font-extrabold mt-2" id="rules-count">0</p>
+    </div>
+  </section>
+
+  <section class="panel p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <p class="muted text-sm">Decisao do sistema</p>
+        <h3 class="text-xl font-bold mt-1" id="inbox-recommendation">Carregando...</h3>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="button" data-status="pending">Pendentes</button>
+        <button class="btn btn-secondary" type="button" data-status="reviewed">Revisadas</button>
+        <button class="btn btn-secondary" type="button" data-status="ignored">Ignoradas</button>
+        <button class="btn btn-secondary" type="button" data-status="all">Todas</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="panel p-6 xl:col-span-2">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="muted text-sm">Entradas</p>
+          <h3 class="text-xl font-bold mt-1">Fila de revisao</h3>
+        </div>
+        <span class="badge bg-gray-800 text-gray-300" id="current-filter">pending</span>
+      </div>
+      <div id="inbox-items" class="space-y-3 mt-5"></div>
+    </div>
+
+    <div class="space-y-6">
+      <form id="rule-form" class="panel p-6 space-y-3">
+        <div>
+          <p class="muted text-sm">Regra pessoal</p>
+          <h3 class="text-xl font-bold mt-1">Ensinar o LIFE OS</h3>
+        </div>
+        <input class="field" id="rule-name" placeholder="Nome da regra">
+        <input class="field" id="rule-pattern" placeholder="Quando texto contiver...">
+        <select class="field" id="rule-target">
+          <option value="financeiro">Financeiro</option>
+          <option value="produtividade">Produtividade</option>
+          <option value="saude">Saude</option>
+          <option value="humor">Humor</option>
+          <option value="treino">Treino</option>
+          <option value="nota_geral">Nota geral</option>
+        </select>
+        <input class="field" id="rule-category" placeholder="Categoria opcional">
+        <button class="btn btn-primary w-full" type="submit">Criar regra</button>
+        <div id="rule-feedback" class="panel-soft p-3 text-sm hidden"></div>
+      </form>
+
+      <div class="panel p-6">
+        <p class="muted text-sm">Regras cadastradas</p>
+        <div id="rules-list" class="space-y-2 mt-4"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+let currentStatus = 'pending';
+
+async function loadInbox() {
+  const [summaryRes, itemsRes, rulesRes] = await Promise.all([
+    fetch('/api/inbox/summary'),
+    fetch(`/api/inbox/items?status=${currentStatus}&limit=40`),
+    fetch('/api/inbox/rules')
+  ]);
+  const summary = await summaryRes.json();
+  const items = await itemsRes.json();
+  const rules = await rulesRes.json();
+
+  document.getElementById('pending-count').innerText = summary.pending || 0;
+  document.getElementById('reviewed-count').innerText = summary.reviewed || 0;
+  document.getElementById('ignored-count').innerText = summary.ignored || 0;
+  document.getElementById('rules-count').innerText = summary.active_rules || 0;
+  document.getElementById('inbox-recommendation').innerText = summary.recommendation || 'Sem recomendacao.';
+  document.getElementById('current-filter').innerText = currentStatus;
+
+  renderItems(items.items || []);
+  renderRules(rules.rules || []);
+}
+
+function renderItems(items) {
+  document.getElementById('inbox-items').innerHTML = items.length ? items.map(item => `
+    <div class="panel-soft p-4" data-entry-id="${item.id}">
+      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge bg-gray-800 text-gray-300">${escapeHtml(item.classification)}</span>
+            <span class="badge bg-green-400 text-gray-950">${Math.round(Number(item.confidence || 0) * 100)}%</span>
+            <span class="muted text-xs">${escapeHtml(item.review_status)}</span>
+          </div>
+          <p class="font-bold mt-3">${escapeHtml(item.raw_text)}</p>
+          <p class="muted text-sm mt-1">${escapeHtml(item.interpreted_text || 'Sem interpretacao estruturada')}</p>
+          <p class="text-sm mt-2">${escapeHtml(item.suggestion || '')}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-primary" type="button" onclick="reviewItem(${item.id}, 'confirm')">Confirmar</button>
+          <button class="btn btn-secondary" type="button" onclick="reviewItem(${item.id}, 'ignore')">Ignorar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
+        <form class="panel p-4 space-y-2" onsubmit="return createTransaction(event, ${item.id})">
+          <p class="font-bold text-sm">Virar transacao</p>
+          <input class="field" name="amount" type="number" step="0.01" placeholder="Valor" value="${escapeHtml(item.extracted_data.amount || '')}">
+          <input class="field" name="description" placeholder="Descricao" value="${escapeHtml(item.extracted_data.description || item.raw_text || '')}">
+          <select class="field" name="transaction_type">
+            <option value="expense">Gasto</option>
+            <option value="income" ${item.extracted_data.transaction_type === 'income' ? 'selected' : ''}>Renda</option>
+          </select>
+          <input class="field" name="category" placeholder="Categoria" value="${escapeHtml(item.extracted_data.category || '')}">
+          <button class="btn btn-secondary w-full" type="submit">Criar transacao</button>
+        </form>
+        <form class="panel p-4 space-y-2" onsubmit="return createTask(event, ${item.id})">
+          <p class="font-bold text-sm">Virar tarefa</p>
+          <input class="field" name="name" placeholder="Nome da tarefa" value="${escapeHtml(item.extracted_data.name || item.raw_text || '')}">
+          <div class="grid grid-cols-3 gap-2">
+            <input class="field" name="impact" type="number" min="1" max="10" value="${escapeHtml(item.extracted_data.impact || 5)}">
+            <input class="field" name="urgency" type="number" min="1" max="10" value="${escapeHtml(item.extracted_data.urgency || 5)}">
+            <input class="field" name="energy_required" type="number" min="1" max="10" value="${escapeHtml(item.extracted_data.energy_required || 5)}">
+          </div>
+          <button class="btn btn-secondary w-full" type="submit">Criar tarefa</button>
+        </form>
+      </div>
+    </div>
+  `).join('') : '<p class="muted text-sm">Nenhuma entrada neste filtro.</p>';
+}
+
+function renderRules(rules) {
+  document.getElementById('rules-list').innerHTML = rules.length ? rules.map(rule => `
+    <div class="panel-soft p-3">
+      <p class="font-semibold">${escapeHtml(rule.name)}</p>
+      <p class="muted text-xs mt-1">${escapeHtml(rule.pattern)} -> ${escapeHtml(rule.target_type)} ${escapeHtml(rule.category || '')}</p>
+    </div>
+  `).join('') : '<p class="muted text-sm">Nenhuma regra cadastrada.</p>';
+}
+
+async function reviewItem(id, action, payload = {}) {
+  await fetch(`/api/inbox/items/${id}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload })
+  });
+  await loadInbox();
+}
+
+function createTransaction(event, id) {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.target).entries());
+  reviewItem(id, 'create_transaction', data);
+  return false;
+}
+
+function createTask(event, id) {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.target).entries());
+  reviewItem(id, 'create_task', data);
+  return false;
+}
+
+document.querySelectorAll('[data-status]').forEach(button => {
+  button.addEventListener('click', () => {
+    currentStatus = button.dataset.status;
+    loadInbox();
+  });
+});
+
+document.getElementById('rule-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const payload = {
+    name: document.getElementById('rule-name').value,
+    pattern: document.getElementById('rule-pattern').value,
+    target_type: document.getElementById('rule-target').value,
+    category: document.getElementById('rule-category').value,
+    action: 'suggest',
+    priority: 5
+  };
+  const response = await fetch('/api/inbox/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const feedback = document.getElementById('rule-feedback');
+  feedback.classList.remove('hidden');
+  if (!response.ok) {
+    const result = await response.json();
+    feedback.innerText = result.error || 'Erro ao criar regra.';
+    return;
+  }
+  event.target.reset();
+  feedback.innerText = 'Regra criada.';
+  await loadInbox();
+});
+
+function escapeHtml(value) {
+  return String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+loadInbox();
+setInterval(loadInbox, 10000);
+</script>
+{% endblock %}

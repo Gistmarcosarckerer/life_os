@@ -4,6 +4,29 @@ Todas as mudancas relevantes do LIFE OS devem ser documentadas neste arquivo.
 
 Formato inspirado em Keep a Changelog.
 
+## v0.11.0 - Inbox inteligente
+
+### Added
+
+- Campos de revisao em `raw_entries`: `review_status`, `review_decision`, `reviewed_at`.
+- Modelo `PersonalRule` e tabela `personal_rules`.
+- Servico `backend/services/inbox_service.py`.
+- Rotas `/inbox` e APIs `/api/inbox/*`.
+- Tela de Inbox operacional para revisar, confirmar, ignorar, criar transacoes, criar tarefas e cadastrar regras pessoais.
+- Link de Inbox na sidebar.
+
+### Changed
+
+- Documentacao atualizada para tratar `raw_entries` como fonte de revisao operacional.
+
+### Fixed
+
+- Entradas nao classificadas deixam de ficar apenas como historico e passam a ter fluxo de decisao.
+
+### Removed
+
+- Nada removido.
+
 ## v0.10.0 - Integracao Pluggy/Open Finance
 
 ### Added

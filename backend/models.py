@@ -102,7 +102,25 @@ class RawEntry(Base):
     suggestion = Column(Text, nullable=False, default="")
     chat_id = Column(String, nullable=False, default="")
     username = Column(String, nullable=False, default="")
+    review_status = Column(String, nullable=False, default="pending")
+    review_decision = Column(String, nullable=False, default="")
+    reviewed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class PersonalRule(Base):
+    __tablename__ = "personal_rules"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    pattern = Column(String, nullable=False)
+    target_type = Column(String, nullable=False, default="note")
+    action = Column(String, nullable=False, default="suggest")
+    category = Column(String, nullable=False, default="")
+    priority = Column(Integer, nullable=False, default=5)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
 class FinancialProfile(Base):

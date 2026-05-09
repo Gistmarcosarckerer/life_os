@@ -24,7 +24,26 @@ versions/v0.7.0
 versions/v0.8.0
 versions/v0.9.0
 versions/v0.10.0
+versions/v0.11.0
 ```
+
+## v0.11.0 - Inbox inteligente
+
+Status: implementado, pronto para validacao com entradas reais.
+
+Principais mudancas:
+
+- `raw_entries` recebeu campos de revisao.
+- Tabela `personal_rules` criada.
+- `inbox_service.py` criado.
+- Nova pagina `/inbox`.
+- APIs `/api/inbox/summary`, `/api/inbox/items`, `/api/inbox/items/<id>/review` e `/api/inbox/rules`.
+- Inbox permite confirmar, ignorar, criar transacao, criar tarefa e criar regra pessoal.
+
+Observacoes:
+
+- Migracao leve adiciona colunas novas em SQLite.
+- Proximo passo: aplicar `personal_rules` automaticamente no `nlp_service.py`.
 
 ## v0.10.0 - Integracao Pluggy/Open Finance
 

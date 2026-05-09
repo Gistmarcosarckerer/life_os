@@ -4,6 +4,7 @@ from config import config
 from backend.database import init_db, session_scope
 from backend.routes.dashboard import dashboard_bp
 from backend.routes.finance import finance_bp
+from backend.routes.inbox import inbox_bp
 from backend.routes.productivity import productivity_bp
 from backend.routes.tasks import tasks_bp
 from backend.routes.telegram import telegram_bp
@@ -30,6 +31,7 @@ def create_app():
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(finance_bp)
+    app.register_blueprint(inbox_bp)
     app.register_blueprint(productivity_bp)
     app.register_blueprint(tasks_bp)
     app.register_blueprint(telegram_bp)
